@@ -1,0 +1,47 @@
+# https://github.com/marketplace/actions/checkout
+# https://github.com/marketplace/actions/setup-java-jdk
+# https://github.com/marketplace/actions/flutter-action
+name: Flutter CI
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  FLUTTER_CHANNEL: stable
+  FLUTTER_VERSION: '3.29.3'
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin' # Dist. oficial de Eclipse. La más estable y recomendada para Android/Flutter build.
+
+jobs:
+  analyze-and-test:
+    name: Analyze and analyze-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        # 
+      - name: Setup Java ( Android build )
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          # 
+      - name: Mostrar Java dis
+        run: echo "${{ env.JAVA_VERSION }}"  
+        # Instalar flutter sdk
+        # 
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v3
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          # 
+          # 
+      - name: Verificar versión de Flutter
+        run: flutter --version        
+        # 
+      - name: Install dependencies
+        run: |
+          flutter pub get

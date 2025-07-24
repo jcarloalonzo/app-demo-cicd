@@ -44,7 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-
-
 key.production.properties
 key.staging.properties
+
+# FVM Version Cache
+.fvm/
