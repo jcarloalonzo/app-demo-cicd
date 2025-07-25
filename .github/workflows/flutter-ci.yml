@@ -16,7 +16,7 @@ env:
 
 jobs:
   prepare:
-    name: Analyze and analyze-and-test
+    name: Prepare configs
     runs-on: ubuntu-latest
 
     steps:

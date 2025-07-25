@@ -43,6 +43,9 @@ android {
     }
 
     signingConfigs {
+        // Configuración de debug por defecto.
+        // create("debug") { }
+
         if(keystoreTestPropertiesFile.exists()){
             create("releaseStaging") {
                 keyAlias = keystoreTestProperties["keyAlias"] as String
@@ -63,9 +66,16 @@ android {
     }
 
     buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("releaseProduction")
-            // signingConfig = signingConfigs.getByName("releaseStaging")
+        getByName("debug") {
+            isDebuggable = true
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
+
+        getByName("release") {
+            isDebuggable = false
+            isMinifyEnabled = true
+            // La firma se asignará dinámicamente según el flavor.
         }
     }
 
