@@ -131,6 +131,7 @@ jobs:
     name: Build Staging apk
     needs: [prepare, test]
     runs-on: ubuntu-latest
+    environment: staging
     # if: github.ref == 'refs/heads/test' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout Repository
@@ -159,18 +160,18 @@ jobs:
         run: |
           echo "Setting up staging keystore..."
           mkdir -p android/app
-          echo "${{ secrets.STAGING_KEYSTORE_BASE64 }}" | base64 -d > android/app/staging-keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/staging-keystore.jks
 
           #verify keystore..
           ls -la android/app/staging-keystore.jks
           
-          keytool -list -v -keystore android/app/staging-keystore.jks -storepass ${{ secrets.STAGING_KEYSTORE_PASSWORD }} -keypass ${{ secrets.STAGING_KEYSTORE_PASSWORD }} || true
+          keytool -list -v -keystore android/app/staging-keystore.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }} || true
 
           # Create key.staging.properties
           cat > android/key.staging.properties << EOF
-          storePassword=${{ secrets.STAGING_STORE_PASSWORD }}
-          keyPassword=${{ secrets.STAGING_KEY_PASSWORD }}
-          keyAlias=${{ secrets.STAGING_KEY_ALIAS }}
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
           storeFile=staging-keystore.jks
           EOF
 
@@ -211,6 +212,8 @@ jobs:
     name: Build Production APK
     needs: [prepare, test]
     runs-on: ubuntu-latest
+    environment: production
+
     # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repos
@@ -242,7 +245,7 @@ jobs:
         run: |
           echo "Setting up production keystore..."
           mkdir -p android/app/
-          echo "${{ secrets.PRODUCTION_KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
           
           # Verify keystore
           echo "Verifying keystore created:"
@@ -250,9 +253,9 @@ jobs:
           
           # Create key.production.properties
           cat > android/key.production.properties << EOF
-          storePassword=${{ secrets.PRODUCTION_STORE_PASSWORD }}
-          keyPassword=${{ secrets.PRODUCTION_KEY_PASSWORD }}
-          keyAlias=${{ secrets.PRODUCTION_KEY_ALIAS }}
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
           storeFile=production-keystore.jks
           EOF
           
