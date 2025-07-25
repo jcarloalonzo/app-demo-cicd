@@ -1,6 +1,7 @@
 # https://github.com/marketplace/actions/checkout
 # https://github.com/marketplace/actions/setup-java-jdk
 # https://github.com/marketplace/actions/flutter-action
+# https://github.com/marketplace/actions/upload-a-build-artifact
 name: Flutter CI
 on:
   push:
@@ -14,7 +15,7 @@ env:
   JAVA_DISTRIBUTION: 'temurin' # Dist. oficial de Eclipse. La más estable y recomendada para Android/Flutter build.
 
 jobs:
-  analyze-and-test:
+  prepare:
     name: Analyze and analyze-and-test
     runs-on: ubuntu-latest
 
@@ -45,3 +46,43 @@ jobs:
       - name: Install dependencies
         run: |
           flutter pub get
+
+          
+      - name: Run code generation
+        run: |
+          flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-dependencies
+          path: |
+            .dart_tool/
+            .packages
+            pubspec.lock
+            lib/**/*.g.dart
+            lib/**/*.freezed.dart
+          retention-days: 1   
+
+  analyze:
+    name: Analyze
+    needs: prepare
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      - name: Analyze code
+        run: flutter analyze 

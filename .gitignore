@@ -49,3 +49,10 @@ key.staging.properties
 
 # FVM Version Cache
 .fvm/
+
+
+# Local configuration files
+*.g.dart
+*.gen.dart
+*.freezed.dart
+
