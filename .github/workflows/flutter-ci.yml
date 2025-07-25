@@ -200,6 +200,86 @@ jobs:
       - name: Upload Staging APK
         uses: actions/upload-artifact@v4
         with:
-          name: rechecking-staging-${{ github.sha }}
+          name: appdemo-staging-${{ github.sha }}
           path: build/app/outputs/flutter-apk/appdemo-staging-v${{ github.run_number }}-${{ github.sha }}.apk
           retention-days: 2      
+
+
+
+
+  build-production:
+    name: Build Production APK
+    needs: [prepare, test]
+    runs-on: ubuntu-latest
+    # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repos
+        uses: actions/checkout@v4
+        
+      # - name: Configure Git for private repos
+      #   run: |
+      #     git config --global url."https://${{ secrets.PAT_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+      #   if: ${{ secrets.PAT_TOKEN != '' }}
+        
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+          
+      - name: Setup Production Keystore
+        run: |
+          echo "Setting up production keystore..."
+          mkdir -p android/app/
+          echo "${{ secrets.PRODUCTION_KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
+          
+          # Verify keystore
+          echo "Verifying keystore created:"
+          ls -la android/app/production-keystore.jks
+          
+          # Create key.production.properties
+          cat > android/key.production.properties << EOF
+          storePassword=${{ secrets.PRODUCTION_STORE_PASSWORD }}
+          keyPassword=${{ secrets.PRODUCTION_KEY_PASSWORD }}
+          keyAlias=${{ secrets.PRODUCTION_KEY_ALIAS }}
+          storeFile=production-keystore.jks
+          EOF
+          
+          # Verify file structure
+          echo "=== Final file structure ==="
+          echo "Directory android/:"
+          ls -la android/
+          echo "Directory android/app/:"
+          ls -la android/app/
+          echo ".properties files found:"
+          find android -name "*.properties" -type f
+          echo ".jks files found:"
+          find android -name "*.jks" -type f
+          
+      - name: Build Production APK
+        run: |
+          flutter build apk --flavor production -t lib/main_production.dart --release
+          
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-production-release.apk \
+             build/app/outputs/flutter-apk/appdemo-production-v${{ github.run_number }}-${{ github.sha }}.apk
+          ls -la build/app/outputs/flutter-apk/
+          
+      - name: Upload Production APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: appdemo-production-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/appdemo-production-v${{ github.run_number }}-${{ github.sha }}.apk
+          retention-days: 14
