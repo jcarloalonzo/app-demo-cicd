@@ -381,6 +381,7 @@ jobs:
         run: |
           echo "📱 Perfiles instalados:"
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          
 
       - name: Build IPA (Production)
         run: |
