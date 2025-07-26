@@ -2,6 +2,8 @@
 # https://github.com/marketplace/actions/setup-java-jdk
 # https://github.com/marketplace/actions/flutter-action
 # https://github.com/marketplace/actions/upload-a-build-artifact
+# https://github.com/marketplace/actions/import-code-signing-certificates
+# https://github.com/marketplace/actions/apple-provisioning-profile-action
 name: Flutter CI
 on:
   push:
@@ -124,14 +126,14 @@ jobs:
       #     name: codecov-umbrella
       #   if: always()
 
-
-
-# Build Staging
+  # Build Staging
   build_staging:
     name: Build Staging apk
     needs: [prepare, test]
     runs-on: ubuntu-latest
+    if: false # Temporarily disabled
     environment: staging
+
     # if: github.ref == 'refs/heads/test' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout Repository
@@ -155,7 +157,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
-          # 
+          #
       - name: Setup staging keystore..
         run: |
           echo "Setting up staging keystore..."
@@ -164,7 +166,7 @@ jobs:
 
           #verify keystore..
           ls -la android/app/staging-keystore.jks
-          
+
           keytool -list -v -keystore android/app/staging-keystore.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }} || true
 
           # Create key.staging.properties
@@ -185,7 +187,7 @@ jobs:
           find android -name "*.properties" -type f
           echo ".jks files found:"
           find android -name "*.jks" -type f
-      
+
       - name: Build Staging apk
         run: |
           echo "Building Staging apk..."
@@ -203,54 +205,52 @@ jobs:
         with:
           name: appdemo-staging-${{ github.sha }}
           path: build/app/outputs/flutter-apk/appdemo-staging-v${{ github.run_number }}-${{ github.sha }}.apk
-          retention-days: 2      
-
-
-
+          retention-days: 2
 
   build-production:
     name: Build Production APK
     needs: [prepare, test]
     runs-on: ubuntu-latest
     environment: production
+    if: false
 
     # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repos
         uses: actions/checkout@v4
-        
+
       # - name: Configure Git for private repos
       #   run: |
       #     git config --global url."https://${{ secrets.PAT_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       #   if: ${{ secrets.PAT_TOKEN != '' }}
-        
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
-          
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
-          
+
       - name: Download dependencies
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
-          
+
       - name: Setup Production Keystore
         run: |
           echo "Setting up production keystore..."
           mkdir -p android/app/
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
-          
+
           # Verify keystore
           echo "Verifying keystore created:"
           ls -la android/app/production-keystore.jks
-          
+
           # Create key.production.properties
           cat > android/key.production.properties << EOF
           storePassword=${{ secrets.STORE_PASSWORD }}
@@ -258,7 +258,7 @@ jobs:
           keyAlias=${{ secrets.KEY_ALIAS }}
           storeFile=production-keystore.jks
           EOF
-          
+
           # Verify file structure
           echo "=== Final file structure ==="
           echo "Directory android/:"
@@ -269,20 +269,99 @@ jobs:
           find android -name "*.properties" -type f
           echo ".jks files found:"
           find android -name "*.jks" -type f
-          
+
       - name: Build Production APK
         run: |
           flutter build apk --flavor production -t lib/main_production.dart --release
-          
+
       - name: Rename APK
         run: |
           mv build/app/outputs/flutter-apk/app-production-release.apk \
              build/app/outputs/flutter-apk/appdemo-production-v${{ github.run_number }}-${{ github.sha }}.apk
           ls -la build/app/outputs/flutter-apk/
-          
+
       - name: Upload Production APK
         uses: actions/upload-artifact@v4
         with:
           name: appdemo-production-${{ github.sha }}
           path: build/app/outputs/flutter-apk/appdemo-production-v${{ github.run_number }}-${{ github.sha }}.apk
           retention-days: 14
+
+  build-ios-prod:
+    name: Build iOS Production
+    needs: [prepare, test]
+    runs-on: macos-latest
+    environment:
+      name: production
+      url: https://appstoreconnect.apple.com
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      - name: Install Apple Certificate
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
+      - name: Verify imported certificate
+        run: |
+          echo "🔍 Listando identidades de firma de código instaladas:"
+          security find-identity -p codesigning -
+
+      #
+      # Instala el perfil de aprovisionamiento
+      - name: Instal provisionng profile
+        uses: apple-actions/import-provisioning-profile@v2
+        with:
+          provisioning-profile-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+
+      - name: Verificar que el profile existe
+        run: |
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "🚀 Archivos en $PROFILES_DIR:"
+          ls -1 "$PROFILES_DIR"/*.mobileprovision || (echo "No se encontró ningún .mobileprovision" && exit 1)
+      #
+      #  Compila la app iOS
+      - name: Build iOS Production
+        run: |
+          echo "🚀 Iniciando la construcción de iOS Production..."
+          flutter build ipa \
+          --flavor production \
+          -t lib/main_production.dart \
+          --release \
+          --export-options-plist=ios/ExportOptions-production.plist
+
+      - name: Verify IPA exists
+        run: |
+          IPA_DIR="build/ios/ipa"
+          echo "🔍 Contenido de $IPA_DIR:"
+          ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
+
+      # Sube el IPA a TestFlight
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: build/ios/ipa/*.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+
+      # Guarda el IPA como artifact
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-ipa-${{ github.sha }}
+          path: build/ios/ipa/*.ipa
+          retention-days: 30      
