@@ -386,7 +386,7 @@ jobs:
             -t lib/main_production.dart \
             --release \
             --export-method app-store \
-            -- -allowProvisioningUpdates
+            -- --allowProvisioningUpdates
         env:
           # Variables para que Xcode use la API automáticamente
           APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
