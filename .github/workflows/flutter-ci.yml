@@ -337,7 +337,7 @@ jobs:
         run: |
           mkdir -p ~/private_keys
           echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-
+          chmod 600 ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
       # - name: Verificar que el profile existe
       #   run: |
       #     PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
@@ -386,7 +386,7 @@ jobs:
             -t lib/main_production.dart \
             --release \
             --export-method app-store \
-            -- --allowProvisioningUpdates
+            -- -allowProvisioningUpdates
         env:
           # Variables para que Xcode use la API automáticamente
           APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
