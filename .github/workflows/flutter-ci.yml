@@ -353,8 +353,9 @@ jobs:
           flutter build ipa \
           --flavor production \
           -t lib/main_production.dart \
-          --release \
-          --export-options-plist=ios/ExportOptions-production.plist
+          --release 
+
+# --export-options-plist=ios/ExportOptions-production.plist
 
       - name: Verify IPA exists
         run: |
