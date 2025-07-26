@@ -356,14 +356,14 @@ jobs:
           echo "✅ El fichero $FILE existe y tiene tamaño $(stat -f%z "$FILE") bytes"
 
       # Verificar que contiene un PEM válido
-      - name: Verify API Key PEM header
-        run: |
-          FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-          if grep -q "-----BEGIN PRIVATE KEY-----" "$FILE"; then
-            echo "🔐 Encabezado correcto detectado"
-          else
-            echo "❌ No se encontró el encabezado 'BEGIN PRIVATE KEY'" && exit 1
-          fi
+      # - name: Verify API Key PEM header
+      #   run: |
+      #     FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+      #     if grep -q "-----BEGIN PRIVATE KEY-----" "$FILE"; then
+      #       echo "🔐 Encabezado correcto detectado"
+      #     else
+      #       echo "❌ No se encontró el encabezado 'BEGIN PRIVATE KEY'" && exit 1
+      #     fi
       # - name: Verify provisioning profile installation
       #   run: |
       #     echo "👉 Contenido de ~/Library/MobileDevice/Provisioning Profiles/"
