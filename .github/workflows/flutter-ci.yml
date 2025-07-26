@@ -324,15 +324,17 @@ jobs:
           echo "🔍 Identidades instaladas:"
           security find-identity -p codesigning -v
       #
-      # Instala el perfil de aprovisionamiento
-      # - name: Download & install Provisioning Profiles
-      #   uses: apple-actions/download-provisioning-profiles@v4
-      #   with:
-      #     bundle-id: "com.jelafintegradores.democicd" # tu Bundle Identifier
-      #     profile-type: "IOS_APP_STORE" # o 'IOS_APP_ADHOC', etc.
-      #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-      #     api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-      #     api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      # --- PASO AÑADIDO / DESCOMENTADO ---
+      # Instala el perfil de aprovisionamiento para la App Store
+      - name: Download & install Provisioning Profiles
+        uses: apple-actions/download-provisioning-profiles@v4
+        with:
+          bundle-id: "com.jelafintegradores.democicd" # Asegúrate que este sea tu Bundle ID correcto
+          profile-type: "IOS_APP_STORE" # Perfil para subir a la App Store
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      # ------------------------------------
       - name: Setup App Store Connect API Key
         run: |
           mkdir -p ~/private_keys
@@ -345,15 +347,15 @@ jobs:
       #     ls -1 "$PROFILES_DIR"/*.mobileprovision || (echo "No se encontró ningún .mobileprovision" && exit 1)
       #
       # Verificar que el archivo existe y no está vacío
-      - name: Verify API Key file exists
-        run: |
-          echo "📂 Listando ~/private_keys:"
-          ls -lh ~/private_keys
-          FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-          if [ ! -s "$FILE" ]; then
-            echo "❌ El fichero $FILE no existe o está vacío" && exit 1
-          fi
-          echo "✅ El fichero $FILE existe y tiene tamaño $(stat -f%z "$FILE") bytes"
+      # - name: Verify API Key file exists
+      #   run: |
+      #     echo "📂 Listando ~/private_keys:"
+      #     ls -lh ~/private_keys
+      #     FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+      #     if [ ! -s "$FILE" ]; then
+      #       echo "❌ El fichero $FILE no existe o está vacío" && exit 1
+      #     fi
+      #     echo "✅ El fichero $FILE existe y tiene tamaño $(stat -f%z "$FILE") bytes"
 
       # Verificar que contiene un PEM válido
       # - name: Verify API Key PEM header
