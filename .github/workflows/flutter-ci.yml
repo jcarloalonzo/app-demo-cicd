@@ -311,7 +311,7 @@ jobs:
           name: flutter-dependencies
 
       - name: Install Apple Certificate
-        uses: apple-actions/import-codesign-certs@v2
+        uses: apple-actions/import-codesign-certs@v5
         with:
           p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
@@ -322,17 +322,30 @@ jobs:
 
       #
       # Instala el perfil de aprovisionamiento
-      - name: Instal provisionng profile
-        uses: apple-actions/import-provisioning-profile@v1
+      # - name: Instal provisionng profile
+      #   uses: apple-actions/import-provisioning-profile@v1
+      #   with:
+      #     provisioning-profile-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+      - name: Download & install Provisioning Profiles
+        uses: apple-actions/download-provisioning-profiles@v4
         with:
-          provisioning-profile-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          bundle-id: "com.jelafintegradores.democicd" # tu Bundle Identifier
+          profile-type: "IOS_APP_STORE" # o 'IOS_APP_ADHOC', etc.
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
-      - name: Verificar que el profile existe
-        run: |
-          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          echo "🚀 Archivos en $PROFILES_DIR:"
-          ls -1 "$PROFILES_DIR"/*.mobileprovision || (echo "No se encontró ningún .mobileprovision" && exit 1)
+      # - name: Verificar que el profile existe
+      #   run: |
+      #     PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+      #     echo "🚀 Archivos en $PROFILES_DIR:"
+      #     ls -1 "$PROFILES_DIR"/*.mobileprovision || (echo "No se encontró ningún .mobileprovision" && exit 1)
       #
+      - name: Verify provisioning profile installation
+        run: |
+          echo "👉 Contenido de ~/Library/MobileDevice/Provisioning Profiles/"
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+
       #  Compila la app iOS
       - name: Build iOS Production
         run: |
@@ -358,11 +371,10 @@ jobs:
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
-
       # Guarda el IPA como artifact
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: production-ipa-${{ github.sha }}
           path: build/ios/ipa/*.ipa
-          retention-days: 30      
+          retention-days: 30
