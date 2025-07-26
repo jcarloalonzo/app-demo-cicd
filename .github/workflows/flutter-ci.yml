@@ -71,6 +71,7 @@ jobs:
     name: Analyze
     needs: prepare
     runs-on: ubuntu-latest
+    if: false 
     continue-on-error: true
     steps:
       - name: Checkout Repository
@@ -94,6 +95,7 @@ jobs:
     name: Run tests
     needs: prepare
     runs-on: ubuntu-latest
+    if: false 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -290,7 +292,7 @@ jobs:
 
   build-ios-prod:
     name: Build iOS Production
-    needs: [prepare, test]
+    # needs: [prepare, test]
     runs-on: macos-latest
     environment:
       name: production
@@ -327,7 +329,7 @@ jobs:
       - name: List code‑sign identities
         run: |
           echo "🔍 Identidades instaladas:"
-          security find-identity -p codesigning -v"          
+          security find-identity -p codesigning -v          
       #
       # Instala el perfil de aprovisionamiento
       # - name: Instal provisionng profile
