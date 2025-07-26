@@ -4,6 +4,7 @@
 # https://github.com/marketplace/actions/upload-a-build-artifact
 # https://github.com/marketplace/actions/import-code-signing-certificates
 # https://github.com/marketplace/actions/apple-provisioning-profile-action
+# https://github.com/marketplace/actions/upload-app-to-testflight
 name: Flutter CI
 on:
   push:
@@ -322,7 +323,7 @@ jobs:
       #
       # Instala el perfil de aprovisionamiento
       - name: Instal provisionng profile
-        uses: apple-actions/import-provisioning-profile@v2
+        uses: apple-actions/import-provisioning-profile@v1
         with:
           provisioning-profile-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
