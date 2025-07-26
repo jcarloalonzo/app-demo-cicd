@@ -353,70 +353,70 @@ jobs:
       #
       # --- PASO AÑADIDO / DESCOMENTADO ---
 
-      - name: Download & install Development Provisioning Profile
-        uses: apple-actions/download-provisioning-profiles@v4
-        with:
-          bundle-id: "com.jelafintegradores.democicd" # Asegúrate que este sea tu Bundle ID correcto
-          profile-type: "IOS_APP_DEVELOPMENT" # Perfil para subir a la App Store
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      # - name: Download & install Development Provisioning Profile
+      #   uses: apple-actions/download-provisioning-profiles@v4
+      #   with:
+      #     bundle-id: "com.jelafintegradores.democicd" # Asegúrate que este sea tu Bundle ID correcto
+      #     profile-type: "IOS_APP_DEVELOPMENT" # Perfil para subir a la App Store
+      #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+      #     api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+      #     api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
 
 
 
-      # Instala el perfil de aprovisionamiento para la App Store
-      - name: Download & install App Store Provisioning Profile
-        uses: apple-actions/download-provisioning-profiles@v4
-        with:
-          bundle-id: "com.jelafintegradores.democicd" # Asegúrate que este sea tu Bundle ID correcto
-          profile-type: "IOS_APP_STORE" # Perfil para subir a la App Store
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-      # ------------------------------------
-    # — NUEVO PASO: listar los perfiles instalados —
-    # — NUEVO PASO: listar los perfiles instalados —
-      - name: List provisioning profiles
-        run: |
-          echo "📱 Perfiles instalados:"
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-          
-
-      - name: Build IPA (Production)
-        run: |
-          flutter build ipa \
-            --flavor production \
-            -t lib/main_production.dart \
-            --release \
-            --export-method app-store \
-            -- -allowProvisioningUpdates
+    #   # Instala el perfil de aprovisionamiento para la App Store
+    #   - name: Download & install App Store Provisioning Profile
+    #     uses: apple-actions/download-provisioning-profiles@v4
+    #     with:
+    #       bundle-id: "com.jelafintegradores.democicd" # Asegúrate que este sea tu Bundle ID correcto
+    #       profile-type: "IOS_APP_STORE" # Perfil para subir a la App Store
+    #       issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+    #       api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+    #       api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+    #   # ------------------------------------
+    # # — NUEVO PASO: listar los perfiles instalados —
+    # # — NUEVO PASO: listar los perfiles instalados —
+    #   - name: List provisioning profiles
+    #     run: |
+    #       echo "📱 Perfiles instalados:"
+    #       ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
 
-      - name: Verify IPA exists
-        run: |
-          IPA_DIR="build/ios/ipa"
-          echo "🔍 Contenido de $IPA_DIR:"
-          ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
+    #   - name: Build IPA (Production)
+    #     run: |
+    #       flutter build ipa \
+    #         --flavor production \
+    #         -t lib/main_production.dart \
+    #         --release \
+    #         --export-method app-store \
+    #         -- -allowProvisioningUpdates
 
-      #
-      - name: Verify IPA exists
-        run: |
-          echo "🔍 IPA files:"
-          ls -lh build/ios/ipa/*.ipa
-      # Sube el IPA a TestFlight
-      - name: Upload to TestFlight
-        uses: apple-actions/upload-testflight-build@v1
-        with:
-          app-path: build/ios/ipa/*.ipa
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
-      # Guarda el IPA como artifact
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: production-ipa-${{ github.sha }}
-          path: build/ios/ipa/*.ipa
-          retention-days: 30
+    #   - name: Verify IPA exists
+    #     run: |
+    #       IPA_DIR="build/ios/ipa"
+    #       echo "🔍 Contenido de $IPA_DIR:"
+    #       ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
+
+    #   #
+    #   - name: Verify IPA exists
+    #     run: |
+    #       echo "🔍 IPA files:"
+    #       ls -lh build/ios/ipa/*.ipa
+    #   # Sube el IPA a TestFlight
+    #   - name: Upload to TestFlight
+    #     uses: apple-actions/upload-testflight-build@v1
+    #     with:
+    #       app-path: build/ios/ipa/*.ipa
+    #       issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+    #       api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+    #       api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+    #   # Guarda el IPA como artifact
+    #   - name: Upload IPA Artifact
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       name: production-ipa-${{ github.sha }}
+    #       path: build/ios/ipa/*.ipa
+    #       retention-days: 30
