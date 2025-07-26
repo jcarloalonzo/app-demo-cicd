@@ -8,4 +8,5 @@ TARGET_NAME = CICD
 PREFIX =
 SUFFIX_NAME =
 ICON_ASSET = AppIcon
+FLAVOR= production
 APP_BUNDLE = com.jelafintegradores.democicd

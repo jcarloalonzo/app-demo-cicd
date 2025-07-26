@@ -8,4 +8,5 @@ TARGET_NAME = CICD Test
 PREFIX = .test
 SUFFIX_NAME = -test
 ICON_ASSET = AppIcon-test
+FLAVOR= staging
 APP_BUNDLE = com.jelafintegradores.democicd.test

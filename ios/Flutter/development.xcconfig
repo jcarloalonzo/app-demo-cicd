@@ -8,4 +8,5 @@ TARGET_NAME = CICD Dev
 PREFIX = .dev
 SUFFIX_NAME = -dev
 ICON_ASSET = AppIcon-dev
-APP_BUNDLE = com.jelafintegradores.cicd.dev
+FLAVOR= development
+APP_BUNDLE = com.jelafintegradores.democicd.dev

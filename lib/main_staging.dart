@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 void main() {
-  log('PRODUCCION');
+  log('STAGING');
   runApp(const MyApp());
 }
 
