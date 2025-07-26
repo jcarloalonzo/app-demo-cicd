@@ -30,7 +30,7 @@ jobs:
       # Generar cache keys únicas
       # 
       # 
-      
+
       - name: Generate cache keys
         id: cache-keys
         run: |
@@ -338,7 +338,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
-
+      - name: Install CocoaPods
+        run: |
+          brew install cocoapods            # si no está
+          cd ios && pod install --repo-update
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v5
         with:
@@ -361,67 +364,16 @@ jobs:
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
       # ------------------------------------
-      - name: Setup App Store Connect API Key
-        run: |
-          mkdir -p ~/private_keys
-          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-          chmod 600 ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-      # - name: Verificar que el profile existe
-      #   run: |
-      #     PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-      #     echo "🚀 Archivos en $PROFILES_DIR:"
-      #     ls -1 "$PROFILES_DIR"/*.mobileprovision || (echo "No se encontró ningún .mobileprovision" && exit 1)
-      #
-      # Verificar que el archivo existe y no está vacío
-      # - name: Verify API Key file exists
-      #   run: |
-      #     echo "📂 Listando ~/private_keys:"
-      #     ls -lh ~/private_keys
-      #     FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-      #     if [ ! -s "$FILE" ]; then
-      #       echo "❌ El fichero $FILE no existe o está vacío" && exit 1
-      #     fi
-      #     echo "✅ El fichero $FILE existe y tiene tamaño $(stat -f%z "$FILE") bytes"
 
-      # Verificar que contiene un PEM válido
-      # - name: Verify API Key PEM header
-      #   run: |
-      #     FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-      #     if grep -q "-----BEGIN PRIVATE KEY-----" "$FILE"; then
-      #       echo "🔐 Encabezado correcto detectado"
-      #     else
-      #       echo "❌ No se encontró el encabezado 'BEGIN PRIVATE KEY'" && exit 1
-      #     fi
-      # - name: Verify provisioning profile installation
-      #   run: |
-      #     echo "👉 Contenido de ~/Library/MobileDevice/Provisioning Profiles/"
-      #     ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
-
-      #  Compila la app iOS
-      # - name: Build iOS Production
-      #   run: |
-      #     echo "🚀 Iniciando la construcción de iOS Production..."
-      #     flutter build ipa \
-      #     --flavor production \
-      #     -t lib/main_production.dart \
-      #     --release --export-method app-store
-      # Build con firma automática
-      - name: Build iOS Production
+      - name: Build IPA (Production)
         run: |
-          echo "🚀 Building iOS with automatic signing..."
           flutter build ipa \
             --flavor production \
             -t lib/main_production.dart \
             --release \
             --export-method app-store \
             -- -allowProvisioningUpdates
-        env:
-          # Variables para que Xcode use la API automáticamente
-          APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
 
-      # --export-options-plist=ios/ExportOptions-production.plist
 
       - name: Verify IPA exists
         run: |
