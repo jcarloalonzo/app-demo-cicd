@@ -71,7 +71,7 @@ jobs:
     name: Analyze
     needs: prepare
     runs-on: ubuntu-latest
-    if: false 
+    if: false
     continue-on-error: true
     steps:
       - name: Checkout Repository
@@ -95,7 +95,7 @@ jobs:
     name: Run tests
     needs: prepare
     runs-on: ubuntu-latest
-    if: false 
+    if: false
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -319,32 +319,24 @@ jobs:
           p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
 
-
-
-
-      - name: Verify imported certificate
-        run: |
-          echo "🔍 Listando identidades de firma de código instaladas:"
-          security find-identity -p codesigning -
-
-      - name: List code‑sign identities
+      - name: Verify code‑sign identities
         run: |
           echo "🔍 Identidades instaladas:"
-          security find-identity -p codesigning -v          
+          security find-identity -p codesigning -v
       #
       # Instala el perfil de aprovisionamiento
-      # - name: Instal provisionng profile
-      #   uses: apple-actions/import-provisioning-profile@v1
+      # - name: Download & install Provisioning Profiles
+      #   uses: apple-actions/download-provisioning-profiles@v4
       #   with:
-      #     provisioning-profile-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-      - name: Download & install Provisioning Profiles
-        uses: apple-actions/download-provisioning-profiles@v4
-        with:
-          bundle-id: "com.jelafintegradores.democicd" # tu Bundle Identifier
-          profile-type: "IOS_APP_STORE" # o 'IOS_APP_ADHOC', etc.
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      #     bundle-id: "com.jelafintegradores.democicd" # tu Bundle Identifier
+      #     profile-type: "IOS_APP_STORE" # o 'IOS_APP_ADHOC', etc.
+      #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+      #     api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+      #     api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      - name: Setup App Store Connect API Key
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
 
       # - name: Verificar que el profile existe
       #   run: |
@@ -352,21 +344,55 @@ jobs:
       #     echo "🚀 Archivos en $PROFILES_DIR:"
       #     ls -1 "$PROFILES_DIR"/*.mobileprovision || (echo "No se encontró ningún .mobileprovision" && exit 1)
       #
-      - name: Verify provisioning profile installation
+      # Verificar que el archivo existe y no está vacío
+      - name: Verify API Key file exists
         run: |
-          echo "👉 Contenido de ~/Library/MobileDevice/Provisioning Profiles/"
-          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "📂 Listando ~/private_keys:"
+          ls -lh ~/private_keys
+          FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+          if [ ! -s "$FILE" ]; then
+            echo "❌ El fichero $FILE no existe o está vacío" && exit 1
+          fi
+          echo "✅ El fichero $FILE existe y tiene tamaño $(stat -f%z "$FILE") bytes"
+
+      # Verificar que contiene un PEM válido
+      - name: Verify API Key PEM header
+        run: |
+          FILE=~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+          if grep -q "-----BEGIN PRIVATE KEY-----" "$FILE"; then
+            echo "🔐 Encabezado correcto detectado"
+          else
+            echo "❌ No se encontró el encabezado 'BEGIN PRIVATE KEY'" && exit 1
+          fi
+      # - name: Verify provisioning profile installation
+      #   run: |
+      #     echo "👉 Contenido de ~/Library/MobileDevice/Provisioning Profiles/"
+      #     ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
 
       #  Compila la app iOS
+      # - name: Build iOS Production
+      #   run: |
+      #     echo "🚀 Iniciando la construcción de iOS Production..."
+      #     flutter build ipa \
+      #     --flavor production \
+      #     -t lib/main_production.dart \
+      #     --release --export-method app-store
+      # Build con firma automática
       - name: Build iOS Production
         run: |
-          echo "🚀 Iniciando la construcción de iOS Production..."
+          echo "🚀 Building iOS with automatic signing..."
           flutter build ipa \
-          --flavor production \
-          -t lib/main_production.dart \
-          --release --export-method app-store
+            --flavor production \
+            -t lib/main_production.dart \
+            --release \
+            --export-method app-store
+        env:
+          # Variables para que Xcode use la API automáticamente
+          APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
 
-# --export-options-plist=ios/ExportOptions-production.plist
+      # --export-options-plist=ios/ExportOptions-production.plist
 
       - name: Verify IPA exists
         run: |
@@ -374,7 +400,7 @@ jobs:
           echo "🔍 Contenido de $IPA_DIR:"
           ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
 
-# 
+      #
       - name: Verify IPA exists
         run: |
           echo "🔍 IPA files:"
