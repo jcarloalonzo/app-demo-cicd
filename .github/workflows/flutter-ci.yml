@@ -338,10 +338,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
-      - name: Install CocoaPods
-        run: |
-          brew install cocoapods            # si no está
-          cd ios && pod install --repo-update
+
+
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v5
         with:
