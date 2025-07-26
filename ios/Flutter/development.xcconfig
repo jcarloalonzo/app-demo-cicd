@@ -1,2 +1,11 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+FLUTTER_BUILD_NAME = 0.0.1
+FLUTTER_BUILD_NUMBER = 1
+FLUTTER_TARGET = lib/main_development.dart
+TARGET_NAME = CICD Dev
+PREFIX = .dev
+SUFFIX_NAME = -dev
+ICON_ASSET = AppIcon-dev
+APP_BUNDLE = com.jelafintegradores.cicd.dev
