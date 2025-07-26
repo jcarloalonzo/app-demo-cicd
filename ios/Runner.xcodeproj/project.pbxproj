@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
-		297D9D1C2E34B5D20041A589 /* production.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 297D9D1B2E34B5D20041A589 /* production.xcconfig */; };
-		297D9D1E2E34B5E30041A589 /* staging.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */; };
-		297D9D202E34B5E90041A589 /* development.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 297D9D1F2E34B5E90041A589 /* development.xcconfig */; };
+		29981B272E356EEC007AE528 /* production.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 29981B262E356EEC007AE528 /* production.xcconfig */; };
+		29981B292E356EF4007AE528 /* staging.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 29981B282E356EF4007AE528 /* staging.xcconfig */; };
+		29981B2B2E356F00007AE528 /* development.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 29981B2A2E356F00007AE528 /* development.xcconfig */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
@@ -45,9 +45,9 @@
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
-		297D9D1B2E34B5D20041A589 /* production.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = production.xcconfig; path = Flutter/production.xcconfig; sourceTree = "<group>"; };
-		297D9D1D2E34B5E30041A589 /* staging.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = staging.xcconfig; path = Flutter/staging.xcconfig; sourceTree = "<group>"; };
-		297D9D1F2E34B5E90041A589 /* development.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = development.xcconfig; path = Flutter/development.xcconfig; sourceTree = "<group>"; };
+		29981B262E356EEC007AE528 /* production.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = production.xcconfig; path = Flutter/production.xcconfig; sourceTree = "<group>"; };
+		29981B282E356EF4007AE528 /* staging.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = staging.xcconfig; path = Flutter/staging.xcconfig; sourceTree = "<group>"; };
+		29981B2A2E356F00007AE528 /* development.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = development.xcconfig; path = Flutter/development.xcconfig; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* DemoCICD.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DemoCICD.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
@@ -88,9 +88,9 @@
 				3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */,
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
-				297D9D1F2E34B5E90041A589 /* development.xcconfig */,
-				297D9D1D2E34B5E30041A589 /* staging.xcconfig */,
-				297D9D1B2E34B5D20041A589 /* production.xcconfig */,
+				29981B2A2E356F00007AE528 /* development.xcconfig */,
+				29981B282E356EF4007AE528 /* staging.xcconfig */,
+				29981B262E356EEC007AE528 /* production.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
 			);
 			name = Flutter;
@@ -221,12 +221,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				297D9D1E2E34B5E30041A589 /* staging.xcconfig in Resources */,
+				29981B292E356EF4007AE528 /* staging.xcconfig in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
-				297D9D1C2E34B5D20041A589 /* production.xcconfig in Resources */,
+				29981B272E356EEC007AE528 /* production.xcconfig in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
-				297D9D202E34B5E90041A589 /* development.xcconfig in Resources */,
+				29981B2B2E356F00007AE528 /* development.xcconfig in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -317,7 +317,7 @@
 /* Begin XCBuildConfiguration section */
 		249021D3217E4FDB00AE95B9 /* Profile-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -370,20 +370,17 @@
 		};
 		249021D4217E4FDB00AE95B9 /* Profile-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = GDQCANTTZ3;
 				ENABLE_BITCODE = NO;
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -392,18 +389,22 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Profile-production";
 		};
-		297D9D212E34B7060041A589 /* Debug-development */ = {
+		29981B2C2E3570FA007AE528 /* Debug-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -459,9 +460,9 @@
 			};
 			name = "Debug-development";
 		};
-		297D9D222E34B7060041A589 /* Debug-development */ = {
+		29981B2D2E3570FA007AE528 /* Debug-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -472,7 +473,6 @@
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -481,18 +481,23 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Debug-development";
 		};
-		297D9D232E34B7060041A589 /* Debug-development */ = {
+		29981B2E2E3570FA007AE528 /* Debug-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -508,9 +513,9 @@
 			};
 			name = "Debug-development";
 		};
-		297D9D242E34B7080041A589 /* Debug-staging */ = {
+		29981B2F2E3570FC007AE528 /* Debug-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -566,9 +571,9 @@
 			};
 			name = "Debug-staging";
 		};
-		297D9D252E34B7080041A589 /* Debug-staging */ = {
+		29981B302E3570FC007AE528 /* Debug-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -579,7 +584,6 @@
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -588,18 +592,23 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Debug-staging";
 		};
-		297D9D262E34B7080041A589 /* Debug-staging */ = {
+		29981B312E3570FC007AE528 /* Debug-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -615,9 +624,9 @@
 			};
 			name = "Debug-staging";
 		};
-		297D9D272E34B70B0041A589 /* Release-development */ = {
+		29981B322E3570FE007AE528 /* Release-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -670,9 +679,9 @@
 			};
 			name = "Release-development";
 		};
-		297D9D282E34B70B0041A589 /* Release-development */ = {
+		29981B332E3570FE007AE528 /* Release-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -683,7 +692,6 @@
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -692,17 +700,22 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Release-development";
 		};
-		297D9D292E34B70B0041A589 /* Release-development */ = {
+		29981B342E3570FE007AE528 /* Release-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -716,9 +729,9 @@
 			};
 			name = "Release-development";
 		};
-		297D9D2A2E34B70D0041A589 /* Release-staging */ = {
+		29981B352E3570FF007AE528 /* Release-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -771,9 +784,9 @@
 			};
 			name = "Release-staging";
 		};
-		297D9D2B2E34B70D0041A589 /* Release-staging */ = {
+		29981B362E3570FF007AE528 /* Release-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -784,7 +797,6 @@
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -793,17 +805,22 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Release-staging";
 		};
-		297D9D2C2E34B70D0041A589 /* Release-staging */ = {
+		29981B372E3570FF007AE528 /* Release-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -817,9 +834,9 @@
 			};
 			name = "Release-staging";
 		};
-		297D9D2D2E34B7100041A589 /* Profile-development */ = {
+		29981B382E357101007AE528 /* Profile-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -870,9 +887,9 @@
 			};
 			name = "Profile-development";
 		};
-		297D9D2E2E34B7100041A589 /* Profile-development */ = {
+		29981B392E357101007AE528 /* Profile-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -883,7 +900,6 @@
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -892,17 +908,22 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Profile-development";
 		};
-		297D9D2F2E34B7100041A589 /* Profile-development */ = {
+		29981B3A2E357101007AE528 /* Profile-development */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1F2E34B5E90041A589 /* development.xcconfig */;
+			baseConfigurationReference = 29981B2A2E356F00007AE528 /* development.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -916,9 +937,9 @@
 			};
 			name = "Profile-development";
 		};
-		297D9D302E34B7120041A589 /* Profile-staging */ = {
+		29981B3B2E357103007AE528 /* Profile-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -969,9 +990,9 @@
 			};
 			name = "Profile-staging";
 		};
-		297D9D312E34B7120041A589 /* Profile-staging */ = {
+		29981B3C2E357103007AE528 /* Profile-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -982,7 +1003,6 @@
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -991,17 +1011,22 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Profile-staging";
 		};
-		297D9D322E34B7120041A589 /* Profile-staging */ = {
+		29981B3D2E357103007AE528 /* Profile-staging */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1D2E34B5E30041A589 /* staging.xcconfig */;
+			baseConfigurationReference = 29981B282E356EF4007AE528 /* staging.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -1017,7 +1042,7 @@
 		};
 		331C8088294A63A400263BE5 /* Debug-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -1035,7 +1060,7 @@
 		};
 		331C8089294A63A400263BE5 /* Release-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -1051,7 +1076,7 @@
 		};
 		331C808A294A63A400263BE5 /* Profile-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -1067,7 +1092,7 @@
 		};
 		97C147031CF9000F007C117D /* Debug-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1125,7 +1150,7 @@
 		};
 		97C147041CF9000F007C117D /* Release-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1180,20 +1205,17 @@
 		};
 		97C147061CF9000F007C117D /* Debug-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = GDQCANTTZ3;
 				ENABLE_BITCODE = NO;
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1202,11 +1224,15 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -1214,20 +1240,17 @@
 		};
 		97C147071CF9000F007C117D /* Release-production */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 297D9D1B2E34B5D20041A589 /* production.xcconfig */;
+			baseConfigurationReference = 29981B262E356EEC007AE528 /* production.xcconfig */;
 			buildSettings = {
 				APP_BUNDLE = "${APP_BUNDLE}";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = GDQCANTTZ3;
 				ENABLE_BITCODE = NO;
 				FLUTTER_BUILD_NAME = "${FLUTTER_BUILD_NAME}";
 				FLUTTER_BUILD_NUMBER = "${FLUTTER_BUILD_NUMBER}";
 				FLUTTER_TARGET = "${FLUTTER_TARGET}";
-				ICON_ASSET = "${ICON_ASSET}";
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1236,10 +1259,14 @@
 				PREFIX = "${PREFIX}";
 				PRODUCT_BUNDLE_IDENTIFIER = "${APP_BUNDLE}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUFFIX_NAME = "${SUFFIX_NAME}";
+				SUFFIX_NAME = "${SUFFIX}";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TARGET_NAME = "${TARGET_NAME}";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -1252,14 +1279,14 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				331C8088294A63A400263BE5 /* Debug-production */,
-				297D9D262E34B7080041A589 /* Debug-staging */,
-				297D9D232E34B7060041A589 /* Debug-development */,
+				29981B312E3570FC007AE528 /* Debug-staging */,
+				29981B2E2E3570FA007AE528 /* Debug-development */,
 				331C8089294A63A400263BE5 /* Release-production */,
-				297D9D2C2E34B70D0041A589 /* Release-staging */,
-				297D9D292E34B70B0041A589 /* Release-development */,
+				29981B372E3570FF007AE528 /* Release-staging */,
+				29981B342E3570FE007AE528 /* Release-development */,
 				331C808A294A63A400263BE5 /* Profile-production */,
-				297D9D322E34B7120041A589 /* Profile-staging */,
-				297D9D2F2E34B7100041A589 /* Profile-development */,
+				29981B3D2E357103007AE528 /* Profile-staging */,
+				29981B3A2E357101007AE528 /* Profile-development */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Release-production";
@@ -1268,14 +1295,14 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				97C147031CF9000F007C117D /* Debug-production */,
-				297D9D242E34B7080041A589 /* Debug-staging */,
-				297D9D212E34B7060041A589 /* Debug-development */,
+				29981B2F2E3570FC007AE528 /* Debug-staging */,
+				29981B2C2E3570FA007AE528 /* Debug-development */,
 				97C147041CF9000F007C117D /* Release-production */,
-				297D9D2A2E34B70D0041A589 /* Release-staging */,
-				297D9D272E34B70B0041A589 /* Release-development */,
+				29981B352E3570FF007AE528 /* Release-staging */,
+				29981B322E3570FE007AE528 /* Release-development */,
 				249021D3217E4FDB00AE95B9 /* Profile-production */,
-				297D9D302E34B7120041A589 /* Profile-staging */,
-				297D9D2D2E34B7100041A589 /* Profile-development */,
+				29981B3B2E357103007AE528 /* Profile-staging */,
+				29981B382E357101007AE528 /* Profile-development */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Release-production";
@@ -1284,14 +1311,14 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				97C147061CF9000F007C117D /* Debug-production */,
-				297D9D252E34B7080041A589 /* Debug-staging */,
-				297D9D222E34B7060041A589 /* Debug-development */,
+				29981B302E3570FC007AE528 /* Debug-staging */,
+				29981B2D2E3570FA007AE528 /* Debug-development */,
 				97C147071CF9000F007C117D /* Release-production */,
-				297D9D2B2E34B70D0041A589 /* Release-staging */,
-				297D9D282E34B70B0041A589 /* Release-development */,
+				29981B362E3570FF007AE528 /* Release-staging */,
+				29981B332E3570FE007AE528 /* Release-development */,
 				249021D4217E4FDB00AE95B9 /* Profile-production */,
-				297D9D312E34B7120041A589 /* Profile-staging */,
-				297D9D2E2E34B7100041A589 /* Profile-development */,
+				29981B3C2E357103007AE528 /* Profile-staging */,
+				29981B392E357101007AE528 /* Profile-development */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Release-production";
