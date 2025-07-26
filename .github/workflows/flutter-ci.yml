@@ -26,6 +26,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         #
+
+      # Generar cache keys únicas
+      # 
+      # 
+      
+      - name: Generate cache keys
+        id: cache-keys
+        run: |
+          echo "flutter=${{ runner.os }}-flutter-${{ env.FLUTTER_VERSION }}" >> $GITHUB_OUTPUT
+          echo "pub=${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}" >> $GITHUB_OUTPUT
+          echo "build=${{ runner.os }}-build-${{ hashFiles('**/*.dart', '**/pubspec.yaml') }}" >> $GITHUB_OUTPUT
+
+      # Cache de Flutter SDK
+      - name: Cache Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+            ~/.flutter-sdk
+          key: ${{ steps.cache-keys.outputs.flutter }}
+# 
+# 
+# 
+# 
+
       - name: Setup Java ( Android build )
         uses: actions/setup-java@v4
         with:
