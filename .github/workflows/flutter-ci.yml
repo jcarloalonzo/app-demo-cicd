@@ -353,7 +353,7 @@ jobs:
           flutter build ipa \
           --flavor production \
           -t lib/main_production.dart \
-          --release 
+          --release --export-method app-store
 
 # --export-options-plist=ios/ExportOptions-production.plist
 
@@ -363,6 +363,11 @@ jobs:
           echo "🔍 Contenido de $IPA_DIR:"
           ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
 
+# 
+      - name: Verify IPA exists
+        run: |
+          echo "🔍 IPA files:"
+          ls -lh build/ios/ipa/*.ipa
       # Sube el IPA a TestFlight
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1

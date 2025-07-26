@@ -37,3 +37,4 @@ scripts:
   generate_apk_test: flutter build apk --flavor staging -t lib/main_staging.dart --release
   generate_ios_production: flutter build ios --flavor production -t lib/main_production.dart --release
   generate_ios_test: flutter build ios --flavor staging -t lib/main_staging.dart --release 
+  generate_ipa_ios_production: flutter build ipa --flavor production -t lib/main_production.dart --release
