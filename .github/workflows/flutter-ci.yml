@@ -28,8 +28,8 @@ jobs:
         #
 
       # Generar cache keys únicas
-      # 
-      # 
+      #
+      #
 
       - name: Generate cache keys
         id: cache-keys
@@ -47,10 +47,10 @@ jobs:
             /opt/hostedtoolcache/flutter
             ~/.flutter-sdk
           key: ${{ steps.cache-keys.outputs.flutter }}
-# 
-# 
-# 
-# 
+      #
+      #
+      #
+      #
 
       - name: Setup Java ( Android build )
         uses: actions/setup-java@v4
@@ -339,7 +339,6 @@ jobs:
         with:
           name: flutter-dependencies
 
-
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v5
         with:
@@ -350,7 +349,37 @@ jobs:
         run: |
           echo "🔍 Identidades instaladas:"
           security find-identity -p codesigning -v
-      #
+
+      - name: Install Apple Provisioning Profile
+        run: |
+          # 1. Crea el directorio donde Xcode busca los perfiles
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
+          echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+
+      - name: Verify Provisioning Profile
+        run: |
+          echo "🔎 Verificando el perfil de aprovisionamiento..."
+          PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+
+          # Comprueba si el archivo existe y no está vacío
+          if [ ! -s "$PROFILE_PATH" ]; then
+            echo "❌ Error: El archivo del perfil de aprovisionamiento no existe o está vacío."
+            exit 1
+          fi
+
+          # Intenta decodificar el perfil para confirmar que es un archivo válido
+          echo "📖 Leyendo el contenido del perfil..."
+          security cms -D -i "$PROFILE_PATH"
+
+          echo "✅ El perfil de aprovisionamiento parece ser válido."      
+          #
+
+      - name: List provisioning profiles
+        run: |
+          echo "📱 Perfiles instalados:"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
       # --- PASO AÑADIDO / DESCOMENTADO ---
 
       # - name: Download & install Development Provisioning Profile
@@ -361,9 +390,6 @@ jobs:
       #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
       #     api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
       #     api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-
-
-
 
     #   # Instala el perfil de aprovisionamiento para la App Store
     #   - name: Download & install App Store Provisioning Profile
@@ -382,7 +408,6 @@ jobs:
     #       echo "📱 Perfiles instalados:"
     #       ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
-
     #   - name: Build IPA (Production)
     #     run: |
     #       flutter build ipa \
@@ -391,7 +416,6 @@ jobs:
     #         --release \
     #         --export-method app-store \
     #         -- -allowProvisioningUpdates
-
 
     #   - name: Verify IPA exists
     #     run: |
