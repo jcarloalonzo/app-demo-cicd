@@ -1,9 +1,1 @@
 #include "Generated.xcconfig"
-FLUTTER_BUILD_NAME = 0.0.1
-FLUTTER_BUILD_NUMBER = 1
-FLUTTER_TARGET = lib/main_development.dart
-TARGET_NAME = DemoCICD Dev
-PREFIX =
-SUFFIX_NAME =
-ICON_ASSET = AppIcon
-APP_BUNDLE = com.jelafintegradores.democicd.dev
