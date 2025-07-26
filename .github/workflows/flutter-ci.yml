@@ -377,10 +377,10 @@ jobs:
       # ------------------------------------
     # — NUEVO PASO: listar los perfiles instalados —
     # — NUEVO PASO: listar los perfiles instalados —
-      - name: List installed provisioning profiles
+      - name: List provisioning profiles
         run: |
-          echo "=== Provisioning Profiles en el runner ==="
-          ls -lh "${HOME}/Library/MobileDevice/Provisioning Profiles/" || echo "No hay perfiles instalados."
+          echo "📱 Perfiles instalados:"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build IPA (Production)
         run: |
