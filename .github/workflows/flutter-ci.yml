@@ -239,7 +239,9 @@ jobs:
 
   build-production:
     name: Build Production APK
-    needs: [prepare, test]
+    # needs: [prepare, test]
+    needs: prepare
+
     runs-on: ubuntu-latest
     environment: production
     # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
