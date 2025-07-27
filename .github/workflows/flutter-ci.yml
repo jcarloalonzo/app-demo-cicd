@@ -156,87 +156,6 @@ jobs:
       #     name: codecov-umbrella
       #   if: always()
 
-  # Build Staging
-  # build_staging:
-  #   name: Build Staging apk
-  #   needs: [prepare, test]
-  #   runs-on: ubuntu-latest
-  #   if: false # Temporarily disabled
-  #   environment: staging
-
-  #   # if: github.ref == 'refs/heads/test' || github.event_name == 'workflow_dispatch'
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-
-  #       # # Setup Java
-  #     - name: Setup Java ( Android build )
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         java-version: ${{ env.JAVA_VERSION }}
-  #         distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-  #     - name: Setup Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: ${{ env.FLUTTER_VERSION }}
-  #         channel: ${{ env.FLUTTER_CHANNEL }}
-  #         #
-  #         #
-  #     - name: Download dependencies
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: flutter-dependencies
-  #         #
-  #     - name: Setup staging keystore..
-  #       run: |
-  #         echo "Setting up staging keystore..."
-  #         mkdir -p android/app
-  #         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/staging-keystore.jks
-
-  #         #verify keystore..
-  #         ls -la android/app/staging-keystore.jks
-
-  #         keytool -list -v -keystore android/app/staging-keystore.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }} || true
-
-  #         # Create key.staging.properties
-  #         cat > android/key.staging.properties << EOF
-  #         storePassword=${{ secrets.STORE_PASSWORD }}
-  #         keyPassword=${{ secrets.KEY_PASSWORD }}
-  #         keyAlias=${{ secrets.KEY_ALIAS }}
-  #         storeFile=staging-keystore.jks
-  #         EOF
-
-  #         # Verify file structure
-  #         echo "=== Final file structure ==="
-  #         echo "Directory android/:"
-  #         ls -la android/
-  #         echo "Directory android/app/:"
-  #         ls -la android/app/
-  #         echo ".properties files found:"
-  #         find android -name "*.properties" -type f
-  #         echo ".jks files found:"
-  #         find android -name "*.jks" -type f
-
-  #     - name: Build Staging apk
-  #       run: |
-  #         echo "Building Staging apk..."
-  #         flutter build apk --flavor staging -t lib/main_staging.dart --release
-  #         echo "Staging apk build completed."
-
-  #     - name: Rename APK
-  #       run: |
-  #         mv build/app/outputs/flutter-apk/app-staging-release.apk \
-  #            build/app/outputs/flutter-apk/appdemo-staging-v${{ github.run_number }}-${{ github.sha }}.apk
-  #         ls -la build/app/outputs/flutter-apk/
-
-  #     - name: Upload Staging APK
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: appdemo-staging-${{ github.sha }}
-  #         path: build/app/outputs/flutter-apk/appdemo-staging-v${{ github.run_number }}-${{ github.sha }}.apk
-  #         retention-days: 2
-
   build-production:
     name: Build Production APK
     # needs: [prepare, test]
@@ -259,10 +178,10 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.2"
-          bundler-cache:
-            true
+          bundler-cache: true
+          working-directory: android
 
-    # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+      # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
       - name: Install Fastlane
         run: gem install fastlane
 
@@ -283,75 +202,20 @@ jobs:
         with:
           name: flutter-dependencies
 
-
-      # 6. Ejecuta la lane de Fastlane que se encarga de:
-      #    • Decodificar y configurar el keystore
-      #    • Generar el archivo key.properties
-      #    • Construir el APK o AAB
-      #    • Subirlo a Google Play (track production)
+      - name: Write Play store credential
+        working-directory: android
+        run: |
+          echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > playstore-credential.json
+          echo "PLAY_STORE_CONFIG_JSON file created successfully."
+    
       - name: Run Fastlane lane
         env:
           # Keystore (base64), contraseñas y alias desde GitHub Secrets
-          KEYSTORE_BASE64:            ${{ secrets.KEYSTORE_BASE64 }}
-          STORE_PASSWORD:             ${{ secrets.STORE_PASSWORD }}
-          KEY_PASSWORD:               ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS:                  ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           # Ruta al JSON de credenciales de Google Play
-          PLAY_STORE_CONFIG_JSON:  ${{ secrets.PLAY_STORE_CONFIG_JSON }}
+          PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
         run: fastlane android deploy_production
 
-
-
-
-
-
-
-
-
-
-
-      # - name: Setup Production Keystore
-      #   run: |
-      #     echo "Setting up production keystore..."
-      #     mkdir -p android/app/
-      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
-
-      #     # Verify keystore
-      #     echo "Verifying keystore created:"
-      #     ls -la android/app/production-keystore.jks
-
-      #     # Create key.production.properties
-      #     cat > android/key.production.properties << EOF
-      #     storePassword=${{ secrets.STORE_PASSWORD }}
-      #     keyPassword=${{ secrets.KEY_PASSWORD }}
-      #     keyAlias=${{ secrets.KEY_ALIAS }}
-      #     storeFile=production-keystore.jks
-      #     EOF
-
-      #     # Verify file structure
-      #     echo "=== Final file structure ==="
-      #     echo "Directory android/:"
-      #     ls -la android/
-      #     echo "Directory android/app/:"
-      #     ls -la android/app/
-      #     echo ".properties files found:"
-      #     find android -name "*.properties" -type f
-      #     echo ".jks files found:"
-      #     find android -name "*.jks" -type f
-
-      # - name: Build Production APK
-      #   run: |
-      #     flutter build apk --flavor production -t lib/main_production.dart --release
-
-      # - name: Rename APK
-      #   run: |
-      #     mv build/app/outputs/flutter-apk/app-production-release.apk \
-      #        build/app/outputs/flutter-apk/appdemo-production-v${{ github.run_number }}-${{ github.sha }}.apk
-      #     ls -la build/app/outputs/flutter-apk/
-
-      # - name: Upload Production APK
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: appdemo-production-${{ github.sha }}
-      #     path: build/app/outputs/flutter-apk/appdemo-production-v${{ github.run_number }}-${{ github.sha }}.apk
-      #     retention-days: 14
