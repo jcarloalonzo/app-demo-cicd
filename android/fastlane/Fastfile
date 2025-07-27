@@ -41,7 +41,8 @@ platform :android do
     upload_to_play_store(
       # Usar track 'production' para producción
       track: 'production', 
-      json_key: ENV['PLAY_STORE_CONFIG_JSON'],
+      # json_key: ENV['PLAY_STORE_CONFIG_JSON'],
+      json_key: 'playstore-credential.json',
       package_name: 'com.jelafintegradores.democicd',
       aab: '../build/app/outputs/bundle/productionRelease/app-production-release.aab',
       skip_upload_metadata: true,
