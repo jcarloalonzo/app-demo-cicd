@@ -1,0 +1,74 @@
+default_platform(:android)
+
+platform :android do
+  desc "Deploy staging App Bundle to Play Store Internal"
+  lane :deploy_staging do
+    # Setup keystore
+    setup_staging_keystore
+    
+    # Build App Bundle
+    Dir.chdir("../") do
+      sh("flutter", "build", "appbundle", "--flavor", "staging", "-t", "lib/main_staging.dart", "--release")
+    end
+
+    # Upload to Play Store
+    upload_to_play_store(
+      track: 'internal',
+      json_key: ENV['GOOGLE_PLAY_JSON_KEY_PATH'],
+      package_name: 'com.tuempresa.tuapp.staging',
+      aab: '../build/app/outputs/bundle/stagingRelease/app-staging-release.aab'
+    )
+  end
+
+  desc "Deploy production App Bundle to Play Store"
+  lane :deploy_production do
+    
+    # Setup keystore
+    UI.message("🚀 Starting deploy_production lane")
+    setup_production_keystore
+    UI.success("✅ Keystore configurado correctamente"
+    
+    # Build App Bundle
+    Dir.chdir("../") do
+      UI.message("💻 Compilando App Bundle (flavor: production)…")
+      sh("flutter", "build", "appbundle", "--flavor", "production", "-t", "lib/main_production.dart", "--release")
+      UI.success("📦 App Bundle construido en build/app/outputs/bundle/productionRelease/")
+    end
+
+    UI.message("☁️ Subiendo a Google Play (track: production)…")
+    # Upload to Play Store
+    upload_to_play_store(
+      # Usar track 'production' para producción
+      track: 'production', 
+      json_key: ENV['PLAY_STORE_CONFIG_JSON'],
+      package_name: 'com.jelafintegradores.democicd',
+      aab: '../build/app/outputs/bundle/productionRelease/app-production-release.aab'
+    )
+    UI.success("🎉 ¡Upload completado!")
+  end
+
+  # Lanes auxiliares para setup de keystores
+  private_lane :setup_staging_keystore do
+    sh("mkdir", "-p", "../app")
+    sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "../app/staging-keystore.jks")
+    
+    File.open("../key.staging.properties", "w") do |file|
+      file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+      file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+      file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+      file.puts "storeFile=staging-keystore.jks"
+    end
+  end
+
+  private_lane :setup_production_keystore do
+    sh("mkdir", "-p", "../app")
+    sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "../app/production-keystore.jks")
+    
+    File.open("../key.production.properties", "w") do |file|
+      file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+      file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+      file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+      file.puts "storeFile=production-keystore.jks"
+    end
+  end
+end

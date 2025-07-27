@@ -56,3 +56,5 @@ key.staging.properties
 *.gen.dart
 *.freezed.dart
 
+
+android/fastlane/playstore-credential.json
