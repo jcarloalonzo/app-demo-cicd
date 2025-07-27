@@ -55,17 +55,38 @@ platform :android do
 
 
 
-  private_lane :setup_production_keystore do
-    sh("mkdir", "-p", "../app")
-    sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "../app/production-keystore.jks")
+  # private_lane :setup_production_keystore do
+  #   sh("mkdir", "-p", "../app")
+  #   sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "../app/production-keystore.jks")
     
-    File.open("../key.production.properties", "w") do |file|
-      file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
-      file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
-      file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
-      file.puts "storeFile=production-keystore.jks"
-    end
+  #   File.open("../key.production.properties", "w") do |file|
+  #     file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+  #     file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+  #     file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+  #     file.puts "storeFile=production-keystore.jks"
+  #   end
+  # end
+
+private_lane :setup_production_keystore do
+  # Crear el keystore en android/app/
+  sh("mkdir", "-p", "app")
+  sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "app/production-keystore.jks")
+  
+  # Crear key.production.properties en android/ (no en ../)
+  File.open("key.production.properties", "w") do |file|
+    file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+    file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+    file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+    file.puts "storeFile=production-keystore.jks"
   end
+end
+
+
+
+
+
+
+
   # Lanes auxiliares para setup de keystores
   # private_lane :setup_staging_keystore do
   #   sh("mkdir", "-p", "../app")
