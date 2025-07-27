@@ -242,8 +242,6 @@ jobs:
     needs: [prepare, test]
     runs-on: ubuntu-latest
     environment: production
-    if: false
-
     # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repos
@@ -265,7 +263,6 @@ jobs:
     # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
       - name: Install Fastlane
         run: gem install fastlane
-
 
       - name: Setup Java
         uses: actions/setup-java@v4
