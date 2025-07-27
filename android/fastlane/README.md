@@ -15,14 +15,6 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## Android
 
-### android deploy_staging
-
-```sh
-[bundle exec] fastlane android deploy_staging
-```
-
-Deploy staging App Bundle to Play Store Internal
-
 ### android deploy_production
 
 ```sh
