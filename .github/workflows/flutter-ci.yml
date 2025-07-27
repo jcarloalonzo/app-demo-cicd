@@ -208,11 +208,12 @@ jobs:
       - name: Write Play store credential
         working-directory: android
         run: |
-          echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > playstore-credential.json
+          echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > fastlane/playstore-credential.json
           echo "PLAY_STORE_CONFIG_JSON file created successfully."
           ls
           ls -la
           pwd
+          ls fastlane/
 
       - name: Run Fastlane lane
         working-directory: android
