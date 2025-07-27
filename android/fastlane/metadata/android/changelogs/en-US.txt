@@ -1,0 +1,4 @@
+• Fixed a crash when opening the profile screen.  
+• Performance improvements on the home screen: loads 2× faster.  
+• Added new PIN-based authentication module.  
+• Updated maps library to version 3.1.0.  
