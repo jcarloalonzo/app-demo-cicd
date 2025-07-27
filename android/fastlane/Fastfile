@@ -84,7 +84,7 @@ private_lane :setup_production_keystore do
   # DEBUG: imprime el SHA-1 que Fastlane está viendo
   sh("keytool -list -v -keystore app/production-keystore.jks \
       -alias #{ENV['KEY_ALIAS']} \
-      -storepass #{ENV['KEYSTORE_PASSWORD']} \
+      -storepass #{ENV['STORE_PASSWORD']} \
       -keypass #{ENV['KEY_PASSWORD']} \
       | grep 'SHA1:'")
 
