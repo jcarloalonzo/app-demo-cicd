@@ -215,52 +215,52 @@ jobs:
           pwd
           ls fastlane/
 
-      - name: Setup Production Keystore
-        run: |
-          echo "Setting up production keystore..."
-          mkdir -p android/app/
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
+      # - name: Setup Production Keystore
+      #   run: |
+      #     echo "Setting up production keystore..."
+      #     mkdir -p android/app/
+      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
 
-          # Verify keystore
-          echo "Verifying keystore created:"
-          ls -la android/app/production-keystore.jks
+      #     # Verify keystore
+      #     echo "Verifying keystore created:"
+      #     ls -la android/app/production-keystore.jks
 
-          # Create key.production.properties
-          cat > android/key.production.properties << EOF
-          storePassword=${{ secrets.STORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=production-keystore.jks
-          EOF
+      #     # Create key.production.properties
+      #     cat > android/key.production.properties << EOF
+      #     storePassword=${{ secrets.STORE_PASSWORD }}
+      #     keyPassword=${{ secrets.KEY_PASSWORD }}
+      #     keyAlias=${{ secrets.KEY_ALIAS }}
+      #     storeFile=production-keystore.jks
+      #     EOF
 
-          # Verify file structure
-          echo "=== Final file structure ==="
-          echo "Directory android/:"
-          ls -la android/
-          echo "Directory android/app/:"
-          ls -la android/app/
-          echo ".properties files found:"
-          find android -name "*.properties" -type f
-          echo ".jks files found:"
-          find android -name "*.jks" -type f
+      #     # Verify file structure
+      #     echo "=== Final file structure ==="
+      #     echo "Directory android/:"
+      #     ls -la android/
+      #     echo "Directory android/app/:"
+      #     ls -la android/app/
+      #     echo ".properties files found:"
+      #     find android -name "*.properties" -type f
+      #     echo ".jks files found:"
+      #     find android -name "*.jks" -type f
 
-      - name: Mostrar SHA1 del keystore
-        run: |
-          echo "SHA1 de la keystore de producción:"
-          keytool -list -v \
-            -keystore android/app/production-keystore.jks \
-            -alias "${{ secrets.KEY_ALIAS }}" \
-            -storepass "${{ secrets.STORE_PASSWORD }}" \
-            -keypass "${{ secrets.KEY_PASSWORD }}" \
-          | grep "SHA1:"          
-      # - name: Run Fastlane lane
-      #   working-directory: android
-      #   env:
-      #     # Keystore (base64), contraseñas y alias desde GitHub Secrets
-      #     KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-      #     STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-      #     KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      #     KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #     # Ruta al JSON de credenciales de Google Play
-      #     PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
-      #   run: fastlane android deploy_production
+      # - name: Mostrar SHA1 del keystore
+      #   run: |
+      #     echo "SHA1 de la keystore de producción:"
+      #     keytool -list -v \
+      #       -keystore android/app/production-keystore.jks \
+      #       -alias "${{ secrets.KEY_ALIAS }}" \
+      #       -storepass "${{ secrets.STORE_PASSWORD }}" \
+      #       -keypass "${{ secrets.KEY_PASSWORD }}" \
+      #     | grep "SHA1:"          
+      - name: Run Fastlane lane
+        working-directory: android
+        env:
+          # Keystore (base64), contraseñas y alias desde GitHub Secrets
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          # Ruta al JSON de credenciales de Google Play
+          PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
+        run: fastlane android deploy_production

@@ -71,27 +71,46 @@ platform :android do
 
 private_lane :setup_production_keystore do
   # Crear el keystore en android/app/
-  sh("mkdir", "-p", "app")
-  sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "app/production-keystore.jks")
+  sh("mkdir -p app")
   
-  # # Crear key.production.properties en android/ (no en ../)
-  # File.open("key.production.properties", "w") do |file|
-  #   file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
-  #   file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
-  #   file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
-  #   file.puts "storeFile=production-keystore.jks"
-  # end
-  # DEBUG: imprime el SHA-1 que Fastlane está viendo
-  sh("keytool -list -v -keystore app/production-keystore.jks \
-      -alias #{ENV['KEY_ALIAS']} \
-      -storepass #{ENV['STORE_PASSWORD']} \
-      -keypass #{ENV['KEY_PASSWORD']} \
-      | grep 'SHA1:'")
-
-
-
-
+  # CAMBIO IMPORTANTE: Usar un solo string para que el pipe funcione
+  sh("echo #{ENV['KEYSTORE_BASE64']} | base64 -d > app/production-keystore.jks")
+  
+  # Crear key.production.properties en android/
+  File.open("key.production.properties", "w") do |file|
+    file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+    file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+    file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+    file.puts "storeFile=production-keystore.jks"
+  end
+  
+  # DEBUG: Verificar el SHA1 del keystore
+  UI.message("🔍 Verificando SHA1 del keystore creado por Fastlane:")
+  sh("keytool -list -v -keystore app/production-keystore.jks -alias #{ENV['KEY_ALIAS']} -storepass #{ENV['STORE_PASSWORD']} -keypass #{ENV['KEY_PASSWORD']} | grep SHA1:")
 end
+# private_lane :setup_production_keystore do
+#   # Crear el keystore en android/app/
+#   sh("mkdir", "-p", "app")
+#   sh("echo", ENV['KEYSTORE_BASE64'], "|", "base64", "-d", ">", "app/production-keystore.jks")
+  
+#   # Crear key.production.properties en android/ (no en ../)
+#   File.open("key.production.properties", "w") do |file|
+#     file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+#     file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+#     file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+#     file.puts "storeFile=production-keystore.jks"
+#   end
+#   # DEBUG: imprime el SHA-1 que Fastlane está viendo
+#   # sh("keytool -list -v -keystore app/production-keystore.jks \
+#   #     -alias #{ENV['KEY_ALIAS']} \
+#   #     -storepass #{ENV['STORE_PASSWORD']} \
+#   #     -keypass #{ENV['KEY_PASSWORD']} \
+#   #     | grep 'SHA1:'")
+
+
+
+
+# end
 
 
 
