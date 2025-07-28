@@ -1,4 +1,0 @@
-• Se corrigió un fallo que provocaba el cierre inesperado al abrir el perfil.  
-• Mejoras de rendimiento en la pantalla de inicio: carga 2× más rápido.  
-• Nuevo módulo de autenticación con PIN.  
-• Actualizada la librería de mapas a la versión 3.1.0.  
