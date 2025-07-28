@@ -29,7 +29,18 @@ platform :ios do
 # 
 # 
 
-
+  lane :verify_setup do
+    UI.message("🔍 Verificando configuración...")
+    
+    # Verificar identidades de firma
+    sh("security find-identity -v -p codesigning")
+    
+    # Verificar provisioning profiles
+    sh("ls -la ~/Library/MobileDevice/Provisioning\\ Profiles/")
+    
+    # Verificar configuración del proyecto
+    sh("xcodebuild -workspace Runner.xcworkspace -scheme production -configuration Release-production -showBuildSettings | grep -E '(PRODUCT_BUNDLE_IDENTIFIER|PROVISIONING_PROFILE|CODE_SIGN_IDENTITY)'")
+  end
 
 
   platform :ios do
@@ -40,7 +51,7 @@ platform :ios do
         workspace:        "Runner.xcworkspace",
         scheme:           "production",
         export_method:    "app-store",
-        configuration:    "Release",
+        configuration:    "Release-production",
         output_directory: "./build",
         output_name:      "app-production.ipa",
         export_options: {
