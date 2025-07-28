@@ -310,7 +310,7 @@ jobs:
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
           cd ios
-          bundle exec fastlane deploy_staging          
+          bundle exec fastlane deploy_staging
           
       # --- PASO AÑADIDO / DESCOMENTADO ---
       # - name: Build iOS IPA (Production)
