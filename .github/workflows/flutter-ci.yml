@@ -303,21 +303,29 @@ jobs:
           echo "📱 Perfiles instalados:"
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
+      - name: Build and deploy with Fastlane
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          cd ios
+          bundle exec fastlane deploy_staging          
           
       # --- PASO AÑADIDO / DESCOMENTADO ---
-      - name: Build iOS IPA (Production)
-        run: |
-          flutter build ipa \
-            --flavor production \
-            -t lib/main_production.dart \
-            --release \
-            --export-options-plist=ios/ExportOptionsProduction.plist
+      # - name: Build iOS IPA (Production)
+      #   run: |
+      #     flutter build ipa \
+      #       --flavor production \
+      #       -t lib/main_production.dart \
+      #       --release \
+      #       --export-options-plist=ios/ExportOptionsProduction.plist
 
-      - name: Verify IPA exists
-        run: |
-          IPA_DIR="build/ios/ipa"
-          echo "🔍 Contenido de $IPA_DIR:"
-          ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
+      # - name: Verify IPA exists
+      #   run: |
+      #     IPA_DIR="build/ios/ipa"
+      #     echo "🔍 Contenido de $IPA_DIR:"
+      #     ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
 
     #   #
     #   - name: Verify IPA exists
