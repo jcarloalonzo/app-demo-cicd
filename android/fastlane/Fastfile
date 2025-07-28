@@ -114,6 +114,18 @@ private_lane :setup_production_keystore do
   # Verificar el SHA1
   UI.message("🔍 SHA1 del keystore:")
   sh("keytool -list -v -keystore app/production-keystore.jks -alias #{ENV['KEY_ALIAS']} -storepass #{ENV['STORE_PASSWORD']} -keypass #{ENV['KEY_PASSWORD']} | grep SHA1:")
+
+
+
+    # Después de crear los archivos, agregar:
+  UI.message("📂 Verificando estructura de archivos:")
+  sh("pwd")
+  sh("ls -la")
+  sh("ls -la app/")
+  
+  # Verificar si hay algún otro keystore
+  UI.message("🔍 Buscando todos los archivos .jks:")
+  sh("find .. -name '*.jks' -type f")
 end
 # private_lane :setup_production_keystore do
 #   # Crear el keystore en android/app/
