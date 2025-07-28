@@ -227,7 +227,6 @@ jobs:
           PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
         run: fastlane android deploy_production
 
-
   build-ios-prod:
     name: Build iOS Production
     # needs: [prepare, test]
@@ -252,20 +251,27 @@ jobs:
         with:
           ruby-version: "3.2"
           bundler-cache: true
-          working-directory: ios          
-
+          working-directory: ios
 
       - name: Download dependencies
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
+      # CRÍTICO: Agregar este paso
+      - name: Build Flutter iOS
+        run: |
+          echo "🔨 Building Flutter iOS..."
+          flutter build ios --release --no-codesign \
+            --build-name=1.0.0 \
+            --build-number=${{ github.run_number }}
 
+
+            
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v5
         with:
           p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
-
 
       - name: Verify code‑sign identities
         run: |
@@ -311,7 +317,7 @@ jobs:
         run: |
           cd ios
           bundle exec fastlane deploy_staging
-          
+
       # --- PASO AÑADIDO / DESCOMENTADO ---
       # - name: Build iOS IPA (Production)
       #   run: |
