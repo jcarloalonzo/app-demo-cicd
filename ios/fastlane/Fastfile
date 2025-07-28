@@ -74,6 +74,7 @@ platform :ios do
         },
         skip_waiting_for_build_processing: true
       )
+      
       UI.success("🎉 [deploy_staging] IPA subida a TestFlight correctamente")
     end
 
