@@ -321,11 +321,13 @@ jobs:
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Crear archivo .p8
+        working-directory: ios
         run: |
-          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > fastlane/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
           pwd
           ls
           ls -la 
+          ls -la fastlane/
           
       - name: Build and deploy with Fastlane
         env:
