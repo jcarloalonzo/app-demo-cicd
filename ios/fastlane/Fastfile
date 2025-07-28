@@ -63,7 +63,7 @@ platform :ios do
       build_staging
 
       UI.message("🔑 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
-      UI.message("🔑 Issuer ID: #{ENV['ISSUER_ID']}")
+      UI.message("🔑 Issuer ID: #{ENV['APPSTORE_ISSUER_ID']}")
 
       upload_to_testflight(
         api_key: {
