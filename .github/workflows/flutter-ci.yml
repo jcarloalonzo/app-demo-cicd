@@ -323,7 +323,7 @@ jobs:
       - name: Crear archivo .p8
         working-directory: ios
         run: |
-          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > fastlane/AuthKey_xxxx.p8
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > fastlane/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
           pwd
           ls
           ls -la 

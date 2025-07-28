@@ -68,12 +68,18 @@ platform :ios do
       sh("pwd")
       sh("ls -la")
 
+        # 1) Creamos objeto API Key
+      api_key = app_store_connect_api_key(
+        key_id:       ENV["APPSTORE_API_KEY_ID"],
+        issuer_id:    ENV["APPSTORE_ISSUER_ID"],
+        key_filepath: "AuthKey_#{ENV['APPSTORE_API_KEY_ID']}.p8"
+      )
+      # 2) Debug opcional: comprobar que Fastlane ve el fichero
+      UI.message("🏷  Usando key_filepath: #{api_key.key_filepath}")
+      UI.message("🔍 Existe? #{File.exist?(api_key.key_filepath)}")
+
       upload_to_testflight(
-        api_key: {
-          key_id:      ENV["APPSTORE_API_KEY_ID"],
-          issuer_id:   ENV["APPSTORE_ISSUER_ID"],
-          key_filepath: "AuthKey_AuthKey_xxxx.p8"
-        },
+        api_key:  api_key,
         skip_waiting_for_build_processing: true
       )
 
