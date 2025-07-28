@@ -69,64 +69,99 @@ platform :android do
   #   end
   # end
 private_lane :setup_production_keystore do
-  # Crear el keystore en android/app/
-  sh("mkdir -p app")
+  # Crear el keystore en android/app/ (no en fastlane/app/)
+  sh("mkdir -p ../app")
   
-  # DEBUG: Verificar el contenido de la variable
+  # DEBUG info...
   UI.message("📋 KEYSTORE_BASE64 primeros 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[0..49]}")
   UI.message("📋 KEYSTORE_BASE64 últimos 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[-50..-1]}")
   UI.message("📋 KEYSTORE_BASE64 length: #{ENV['KEYSTORE_BASE64'].to_s.length}")
-  
-  # Calcular MD5 del string base64 para verificar consistencia
-  require 'digest'
-  md5_base64 = Digest::MD5.hexdigest(ENV['KEYSTORE_BASE64'])
-  UI.message("📋 MD5 of KEYSTORE_BASE64: #{md5_base64}")
   
   # Decodificar usando Ruby
   require 'base64'
   keystore_data = Base64.decode64(ENV['KEYSTORE_BASE64'])
   
-  # DEBUG: Verificar el tamaño del keystore decodificado
-  UI.message("📏 Decoded keystore size: #{keystore_data.bytesize} bytes")
-  
-  # Calcular MD5 del keystore decodificado
-  md5_keystore = Digest::MD5.hexdigest(keystore_data)
-  UI.message("📏 MD5 of decoded keystore: #{md5_keystore}")
-  
-  # Escribir el archivo
-  File.open("app/production-keystore.jks", "wb") do |file|
+  # Escribir el keystore en android/app/
+  File.open("../app/production-keystore.jks", "wb") do |file|
     file.write(keystore_data)
   end
   
-  # Verificar que el archivo se escribió correctamente
-  UI.message("📁 Keystore file info:")
-  sh("ls -la app/production-keystore.jks")
-  sh("file app/production-keystore.jks")
-  
-  # Crear key.production.properties
-  File.open("key.production.properties", "w") do |file|
+  # Crear key.production.properties en android/ (no en fastlane/)
+  File.open("../key.production.properties", "w") do |file|
     file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
     file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
     file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
     file.puts "storeFile=production-keystore.jks"
   end
   
-  # Verificar el SHA1
-  UI.message("🔍 SHA1 del keystore:")
-  sh("keytool -list -v -keystore app/production-keystore.jks -alias #{ENV['KEY_ALIAS']} -storepass #{ENV['STORE_PASSWORD']} -keypass #{ENV['KEY_PASSWORD']} | grep SHA1:")
-
-
-
-    # Después de crear los archivos, agregar:
-  UI.message("📂 Verificando estructura de archivos:")
-  sh("pwd")
-  sh("ls -la")
-  sh("ls -la app/")
+  # Verificar
+  UI.message("🔍 Verificando SHA1 del keystore:")
+  sh("keytool -list -v -keystore ../app/production-keystore.jks -alias #{ENV['KEY_ALIAS']} -storepass #{ENV['STORE_PASSWORD']} -keypass #{ENV['KEY_PASSWORD']} | grep SHA1:")
   
-  # Verificar si hay algún otro keystore
-  UI.message("🔍 Buscando todos los archivos .jks:")
-  sh("find .. -name '*.jks' -type f")
-end
+  # Debug de ubicaciones
+  UI.message("📂 Archivos creados:")
+  sh("ls -la ../app/production-keystore.jks")
+  sh("ls -la ../key.production.properties")
+end  
+# private_lane :setup_production_keystore do
+#   # Crear el keystore en android/app/
+#   sh("mkdir -p app")
+  
+#   # DEBUG: Verificar el contenido de la variable
+#   UI.message("📋 KEYSTORE_BASE64 primeros 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[0..49]}")
+#   UI.message("📋 KEYSTORE_BASE64 últimos 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[-50..-1]}")
+#   UI.message("📋 KEYSTORE_BASE64 length: #{ENV['KEYSTORE_BASE64'].to_s.length}")
+  
+#   # Calcular MD5 del string base64 para verificar consistencia
+#   require 'digest'
+#   md5_base64 = Digest::MD5.hexdigest(ENV['KEYSTORE_BASE64'])
+#   UI.message("📋 MD5 of KEYSTORE_BASE64: #{md5_base64}")
+  
+#   # Decodificar usando Ruby
+#   require 'base64'
+#   keystore_data = Base64.decode64(ENV['KEYSTORE_BASE64'])
+  
+#   # DEBUG: Verificar el tamaño del keystore decodificado
+#   UI.message("📏 Decoded keystore size: #{keystore_data.bytesize} bytes")
+  
+#   # Calcular MD5 del keystore decodificado
+#   md5_keystore = Digest::MD5.hexdigest(keystore_data)
+#   UI.message("📏 MD5 of decoded keystore: #{md5_keystore}")
+  
+#   # Escribir el archivo
+#   File.open("app/production-keystore.jks", "wb") do |file|
+#     file.write(keystore_data)
+#   end
+  
+#   # Verificar que el archivo se escribió correctamente
+#   UI.message("📁 Keystore file info:")
+#   sh("ls -la app/production-keystore.jks")
+#   sh("file app/production-keystore.jks")
+  
+#   # Crear key.production.properties
+#   File.open("key.production.properties", "w") do |file|
+#     file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+#     file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+#     file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+#     file.puts "storeFile=production-keystore.jks"
+#   end
+  
+#   # Verificar el SHA1
+#   UI.message("🔍 SHA1 del keystore:")
+#   sh("keytool -list -v -keystore app/production-keystore.jks -alias #{ENV['KEY_ALIAS']} -storepass #{ENV['STORE_PASSWORD']} -keypass #{ENV['KEY_PASSWORD']} | grep SHA1:")
+
+
+
+#     # Después de crear los archivos, agregar:
+#   UI.message("📂 Verificando estructura de archivos:")
+#   sh("pwd")
+#   sh("ls -la")
+#   sh("ls -la app/")
+  
+#   # Verificar si hay algún otro keystore
+#   UI.message("🔍 Buscando todos los archivos .jks:")
+#   sh("find .. -name '*.jks' -type f")
+# end
 # private_lane :setup_production_keystore do
 #   # Crear el keystore en android/app/
 #   sh("mkdir -p app")
