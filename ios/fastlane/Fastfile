@@ -69,7 +69,6 @@ platform :ios do
       }
     )
 
-    UI.success("✅ [build_staging] IPA generada en: #{ipa_path}")
   end
 
     desc "Deploy Staging a TestFlight"
