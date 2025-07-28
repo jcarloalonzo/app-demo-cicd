@@ -242,7 +242,7 @@ jobs:
       - name: Select Xcode 16
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.0' # Puedes usar 'latest' o una versión específica
+          xcode-version: '16.2.0' # Puedes usar 'latest' o una versión específica
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
