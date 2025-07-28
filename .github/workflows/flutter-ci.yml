@@ -320,6 +320,13 @@ jobs:
           echo "📱 Perfiles instalados:"
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
+      - name: Crear archivo .p8
+        run: |
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+          pwd
+          ls
+          ls -la 
+          
       - name: Build and deploy with Fastlane
         env:
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}

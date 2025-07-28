@@ -65,16 +65,19 @@ platform :ios do
       UI.message("🔑 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
       UI.message("🔑 Issuer ID: #{ENV['APPSTORE_ISSUER_ID']}")
       UI.message("🔑 APPSTORE_API_PRIVATE_KEY: #{ENV['APPSTORE_API_PRIVATE_KEY']}")
+      sh("pwd")
+      sh("ls -la")
 
       upload_to_testflight(
         api_key: {
           key_id:      ENV["APPSTORE_API_KEY_ID"],
           issuer_id:   ENV["APPSTORE_ISSUER_ID"],
-          key_content: ENV["APPSTORE_API_PRIVATE_KEY"]
+          # key_content: ENV["APPSTORE_API_PRIVATE_KEY"]´
+          key_filepath: "AuthKey_#{ENV['APPSTORE_API_KEY_ID']}.p8"
         },
         skip_waiting_for_build_processing: true
       )
-      
+
       UI.success("🎉 [deploy_staging] IPA subida a TestFlight correctamente")
     end
 
