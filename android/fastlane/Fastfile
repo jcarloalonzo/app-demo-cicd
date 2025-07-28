@@ -51,7 +51,9 @@ platform :android do
       skip_upload_changelogs: true,
       # skip_upload_changelogs: false,
       # release_status: 'completed' # 'draft' para pruebas, 'completed' para producción
-      release_status: 'draft' # 'draft' para pruebas, 'completed' para producción
+      # release_status: 'draft' # 'draft' para pruebas, 'completed' para producción
+      release_status: 'halted' # 'draft' para pruebas, 'completed' para producción
+
     )
     UI.success("🎉 ¡Upload completado!")
   end

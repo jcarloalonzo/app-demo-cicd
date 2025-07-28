@@ -113,8 +113,8 @@ android {
             dimension = "environment"
             applicationIdSuffix = ""
             versionNameSuffix = ""
-            versionCode = 2
-            versionName = "0.0.2"
+            versionCode = 3
+            versionName = "0.0.3"
             //signingConfig = signingConfigs.getByName("releaseProduction")
             buildTypes {
                 getByName("debug") {
