@@ -43,27 +43,40 @@ platform :ios do
   end
 
 
-  platform :ios do
-    desc "Build production TestFlight IPA con debug"
-    lane :build_staging do
-      UI.message("🔧 [build_staging] Compilando IPA…")
-      build_app(
-        workspace:        "Runner.xcworkspace",
-        scheme:           "production",
-        export_method:    "app-store",
-        configuration:    "Release-production",
-        output_directory: "./build",
-        output_name:      "app-production.ipa",
-        export_options: {
-           provisioningProfiles: {
-            "com.jelafintegradores.democicd" => "JessmarDistProfileDemo"
-          }
-        }    
+  desc "Build production TestFlight IPA con firma manual"
+  lane :build_staging do
+    UI.message("🔧 [build_staging] Compilando IPA con firma manual…")
 
-      )
-      ipa_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
-      UI.success("✅ [build_staging] IPA generada en: #{ipa_path}")
-    end
+    # 1) Fija la firma manual para tu configuración custom "Release-production"
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      targets: ["Runner"],
+      build_configurations: ["Release-production"],
+      profile_name: "JessmarDistProfileDemo",                           # tu provisioning profile de distribución
+      code_sign_identity: "iPhone Distribution: Jessmar Perez (GDQCANTTZ3)"  # el certificado exacto en tu keychain
+    )
+
+    # 2) Compila la IPA usando ese perfil y evita que Gym intente detectarlos por su cuenta
+    build_app(
+      workspace:              "Runner.xcworkspace",
+      scheme:                 "production",
+      configuration:          "Release-production",
+      export_method:          "app-store",
+      output_directory:       "./build",
+      output_name:            "app-production.ipa",
+      skip_profile_detection: true,
+      export_options: {
+        provisioningProfiles: {
+          "com.jelafintegradores.democicd" => "JessmarDistProfileDemo"
+        },
+        signingStyle: "manual",
+        teamID:       "GDQCANTTZ3"
+      }
+    )
+
+    UI.success("✅ [build_staging] IPA generada en: #{ipa_path}")
+  end
 
     desc "Deploy Staging a TestFlight"
     lane :deploy_staging do
