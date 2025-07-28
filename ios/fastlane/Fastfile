@@ -67,18 +67,20 @@ platform :ios do
       UI.message("🔑 APPSTORE_API_PRIVATE_KEY: #{ENV['APPSTORE_API_PRIVATE_KEY']}")
       sh("pwd")
       sh("ls -la")
+      # Obtiene la ruta de la carpeta donde está este Fastfile (es decir, .../ios/fastlane)
+      fastlane_dir = File.dirname(__FILE__) 
 
+      # Crea la ruta completa y correcta al archivo
+      key_path = File.expand_path("AuthKey_123.p8", fastlane_dir) 
         # 1) Creamos objeto API Key
       api_key = app_store_connect_api_key(
         # key_id:       ENV["APPSTORE_API_KEY_ID"],
         # issuer_id:    ENV["APPSTORE_ISSUER_ID"],
         key_id: "6X599Y8L2Z",
         issuer_id: "b5321cf4-dfaa-4715-8b11-af98398bb91c",
-        key_filepath: "AuthKey_123.p8"
+        key_filepath: key_path
       )
-      # 2) Debug opcional: comprobar que Fastlane ve el fichero
-      UI.message("🏷  Usando key_filepath: #{api_key.key_filepath}")
-      UI.message("🔍 Existe? #{File.exist?(api_key.key_filepath)}")
+
 
       upload_to_testflight(
         api_key:  api_key,
