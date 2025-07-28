@@ -160,7 +160,7 @@ jobs:
     name: Build Production APK
     # needs: [prepare, test]
     needs: prepare
-
+    if: false
     runs-on: ubuntu-latest
     environment: production
     # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
@@ -215,44 +215,6 @@ jobs:
           pwd
           ls fastlane/
 
-      # - name: Setup Production Keystore
-      #   run: |
-      #     echo "Setting up production keystore..."
-      #     mkdir -p android/app/
-      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/production-keystore.jks
-
-      #     # Verify keystore
-      #     echo "Verifying keystore created:"
-      #     ls -la android/app/production-keystore.jks
-
-      #     # Create key.production.properties
-      #     cat > android/key.production.properties << EOF
-      #     storePassword=${{ secrets.STORE_PASSWORD }}
-      #     keyPassword=${{ secrets.KEY_PASSWORD }}
-      #     keyAlias=${{ secrets.KEY_ALIAS }}
-      #     storeFile=production-keystore.jks
-      #     EOF
-
-      #     # Verify file structure
-      #     echo "=== Final file structure ==="
-      #     echo "Directory android/:"
-      #     ls -la android/
-      #     echo "Directory android/app/:"
-      #     ls -la android/app/
-      #     echo ".properties files found:"
-      #     find android -name "*.properties" -type f
-      #     echo ".jks files found:"
-      #     find android -name "*.jks" -type f
-
-      # - name: Mostrar SHA1 del keystore
-      #   run: |
-      #     echo "SHA1 de la keystore de producción:"
-      #     keytool -list -v \
-      #       -keystore android/app/production-keystore.jks \
-      #       -alias "${{ secrets.KEY_ALIAS }}" \
-      #       -storepass "${{ secrets.STORE_PASSWORD }}" \
-      #       -keypass "${{ secrets.KEY_PASSWORD }}" \
-      #     | grep "SHA1:"          
       - name: Run Fastlane lane
         working-directory: android
         env:
@@ -265,4 +227,116 @@ jobs:
           PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
         run: fastlane android deploy_production
 
-        
+
+  build-ios-prod:
+    name: Build iOS Production
+    # needs: [prepare, test]
+    needs: prepare
+    runs-on: macos-latest
+    environment:
+      name: production
+      url: https://appstoreconnect.apple.com
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: ios          
+
+
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      - name: Install Apple Certificate
+        uses: apple-actions/import-codesign-certs@v5
+        with:
+          p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
+
+
+      - name: Verify code‑sign identities
+        run: |
+          echo "🔍 Identidades instaladas:"
+          security find-identity -p codesigning -v
+
+      - name: Install Apple Provisioning Profile
+        run: |
+          # 1. Crea el directorio donde Xcode busca los perfiles
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
+          echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+
+      - name: Verify Provisioning Profile
+        run: |
+          echo "🔎 Verificando el perfil de aprovisionamiento..."
+          PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+
+          # Comprueba si el archivo existe y no está vacío
+          if [ ! -s "$PROFILE_PATH" ]; then
+            echo "❌ Error: El archivo del perfil de aprovisionamiento no existe o está vacío."
+            exit 1
+          fi
+
+          # Intenta decodificar el perfil para confirmar que es un archivo válido
+          echo "📖 Leyendo el contenido del perfil..."
+          security cms -D -i "$PROFILE_PATH"
+
+          echo "✅ El perfil de aprovisionamiento parece ser válido."      
+          #
+
+      - name: List provisioning profiles
+        run: |
+          echo "📱 Perfiles instalados:"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+
+          
+      # --- PASO AÑADIDO / DESCOMENTADO ---
+      - name: Build iOS IPA (Production)
+        run: |
+          flutter build ipa \
+            --flavor production \
+            -t lib/main_production.dart \
+            --release \
+            --export-options-plist=ios/ExportOptionsProduction.plist
+
+      - name: Verify IPA exists
+        run: |
+          IPA_DIR="build/ios/ipa"
+          echo "🔍 Contenido de $IPA_DIR:"
+          ls -lh "$IPA_DIR"/*.ipa || (echo "❌ No se encontró ningún .ipa" && exit 1)
+
+    #   #
+    #   - name: Verify IPA exists
+    #     run: |
+    #       echo "🔍 IPA files:"
+    #       ls -lh build/ios/ipa/*.ipa
+    #   # Sube el IPA a TestFlight
+    #   - name: Upload to TestFlight
+    #     uses: apple-actions/upload-testflight-build@v1
+    #     with:
+    #       app-path: build/ios/ipa/*.ipa
+    #       issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+    #       api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+    #       api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+    #   # Guarda el IPA como artifact
+    #   - name: Upload IPA Artifact
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       name: production-ipa-${{ github.sha }}
+    #       path: build/ios/ipa/*.ipa
+    #       retention-days: 30
