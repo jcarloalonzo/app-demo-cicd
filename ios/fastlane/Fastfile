@@ -22,12 +22,6 @@ platform :ios do
 
 
 
-# 
-# 
-# 
-# 
-# 
-# 
 
   lane :verify_setup do
     UI.message("🔍 Verificando configuración...")
@@ -96,7 +90,6 @@ platform :ios do
       )
       UI.success("🎉 [deploy_staging] IPA subida a TestFlight correctamente")
     end
-  end
 
   # 
   # 
