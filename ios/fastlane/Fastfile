@@ -74,7 +74,7 @@ platform :ios do
         # issuer_id:    ENV["APPSTORE_ISSUER_ID"],
         key_id: "6X599Y8L2Z",
         issuer_id: "b5321cf4-dfaa-4715-8b11-af98398bb91c",
-        key_filepath: "AuthKey_#{ENV['APPSTORE_API_KEY_ID']}.p8"
+        key_filepath: "AuthKey_123.p8"
       )
       # 2) Debug opcional: comprobar que Fastlane ve el fichero
       UI.message("🏷  Usando key_filepath: #{api_key.key_filepath}")
