@@ -32,36 +32,40 @@ platform :ios do
 
 
 
-  desc "Build production TestFlight IPA"
-  lane :build_staging do
-    UI.message("🔧 [build_staging] Schemes disponibles: #{Actions.lane_context[SharedValues::CONFIGURATION]}")
-    UI.message("🔧 [build_staging] Usando scheme ‘production’ y export_method ‘app-store’")
-    build_app(
-      workspace:        "Runner.xcworkspace",
-      scheme:           "production",
-      export_method:    "app-store",
-      configuration:    "Release",
-      output_directory: "./build",
-      output_name:      "app-production.ipa"
-    )
-    UI.success("✅ [build_staging] IPA generada en ./build/app-production.ipa")
-  end
+  platform :ios do
+    desc "Build production TestFlight IPA con debug"
+    lane :build_staging do
+      UI.message("🔧 [build_staging] Compilando IPA…")
+      build_app(
+        workspace:        "Runner.xcworkspace",
+        scheme:           "production",
+        export_method:    "app-store",
+        configuration:    "Release",
+        output_directory: "./build",
+        output_name:      "app-production.ipa"
+      )
+      ipa_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
+      UI.success("✅ [build_staging] IPA generada en: #{ipa_path}")
+    end
 
+    desc "Deploy Staging a TestFlight"
+    lane :deploy_staging do
+      UI.message("🚀 [deploy_staging] Iniciando build y upload a TestFlight…")
+      build_staging
 
-  desc "Deploy Staging to TestFlight"
-  lane :deploy_staging do
-    UI.message("👉 Scheme: production")
-    UI.message("👉 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
-    build_staging
-    UI.message("✅ Build complete, uploading to TestFlight…")
-    upload_to_testflight(
-      api_key: {
-        key_id:    ENV["APPSTORE_API_KEY_ID"],
-        issuer_id: ENV["APPSTORE_ISSUER_ID"],
-        key_content: ENV["APPSTORE_API_PRIVATE_KEY"]
-      },
-      skip_waiting_for_build_processing: true
-    )
+      UI.message("🔑 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
+      UI.message("🔑 Issuer ID: #{ENV['ISSUER_ID']}")
+
+      upload_to_testflight(
+        api_key: {
+          key_id:      ENV["APPSTORE_API_KEY_ID"],
+          issuer_id:   ENV["ISSUER_ID"],
+          key_content: ENV["APPSTORE_API_PRIVATE_KEY"]
+        },
+        skip_waiting_for_build_processing: true
+      )
+      UI.success("🎉 [deploy_staging] IPA subida a TestFlight correctamente")
+    end
   end
 
   # 
