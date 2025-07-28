@@ -332,7 +332,7 @@ jobs:
           ls -la
           
       - name: Build and deploy with Fastlane
-        working-directory: android
+        working-directory: ios
         env:
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
