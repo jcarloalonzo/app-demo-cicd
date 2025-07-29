@@ -75,15 +75,7 @@ env:
 # JOBS DEL WORKFLOW
 # =============================================================================
 
-
-
-
-
-
-
-
 jobs:
-
   quick-check-pr:
     name: ✍️👀 Quick Check PR
     runs-on: ubuntu-latest
