@@ -20,6 +20,45 @@ platform :android do
   #   )
   # end
 
+private_lane :build_aab_production do
+  Dir.chdir("../") do
+    UI.message("💻 Compilando App Bundle (flavor: production)…")
+    sh("flutter build appbundle --flavor production -t lib/main_production.dart --release")
+    UI.success("📦 App Bundle construido en build/app/outputs/bundle/productionRelease/")
+  end
+end
+
+private_lane :build_apk_production do
+  Dir.chdir("../") do
+    UI.message("💻 Compilando apk (flavor: production)…")
+    sh("flutter build apk --flavor production -t lib/main_production.dart --release")
+    sh("find .. -name 'app-production-release.apk'")
+    UI.success("📦 App Bundle construido en build/app/outputs/apk/")
+  end
+end
+
+private_lane :build_aab_staging do
+  Dir.chdir("../") do
+    UI.message("💻 Compilando App Bundle (flavor: staging)…")
+    sh("flutter build appbundle --flavor staging -t lib/main_staging.dart --release")
+    sh("find .. -name 'app-staging-release.aab'")
+    UI.success("📦 App Bundle construido en build/app/outputs/bundle/stagingRelease/")
+  end
+end
+
+private_lane :build_apk_staging do
+  Dir.chdir("../") do
+    UI.message("💻 Compilando apk (flavor: staging)…")
+    sh("flutter build apk --flavor staging -t lib/main_staging.dart --release")
+    sh("find .. -name 'app-production-release.apk'")
+    UI.success("📦 App Bundle construido en build/app/outputs/apk/")
+  end
+end
+
+
+
+
+
   desc "Deploy production App Bundle to Play Store"
   lane :deploy_production do
     
@@ -96,4 +135,93 @@ private_lane :setup_production_keystore do
 end  
 
 
+
+
+
+
+
+
+# 
+# 
+# 
+# 
+# 
+
+private_lane :setup_staging_keystore do
+  # Crear el keystore en android/app/ (no en fastlane/app/)
+  sh("mkdir -p ../app")
+  
+  # DEBUG info...
+  UI.message("📋 KEYSTORE_BASE64 primeros 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[0..49]}")
+  UI.message("📋 KEYSTORE_BASE64 últimos 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[-50..-1]}")
+  UI.message("📋 KEYSTORE_BASE64 length: #{ENV['KEYSTORE_BASE64'].to_s.length}")
+  
+  # Decodificar usando Ruby
+  require 'base64'
+  keystore_data = Base64.decode64(ENV['KEYSTORE_BASE64'])
+  
+  # Escribir el keystore en android/app/
+  File.open("../app/staging-keystore.jks", "wb") do |file|
+    file.write(keystore_data)
+  end
+  
+  # Crear key.production.properties en android/ (no en fastlane/)
+  File.open("../key.staging.properties", "w") do |file|
+    file.puts "storePassword=#{ENV['STORE_PASSWORD']}"
+    file.puts "keyPassword=#{ENV['KEY_PASSWORD']}"
+    file.puts "keyAlias=#{ENV['KEY_ALIAS']}"
+    file.puts "storeFile=staging-keystore.jks"
+  end
+  
+  # Verificar
+  UI.message("🔍 Verificando SHA1 del keystore:")
+  sh("keytool -list -v -keystore ../app/staging-keystore.jks -alias #{ENV['KEY_ALIAS']} -storepass #{ENV['STORE_PASSWORD']} -keypass #{ENV['KEY_PASSWORD']} | grep SHA1:")
+  
+  # Debug de ubicaciones
+  UI.message("📂 Archivos creados:")
+  sh("ls -la ../app/staging-keystore.jks")
+  sh("ls -la ../key.staging.properties")
+end  
+
+
+
+  desc "Deploy staging App Bundle to Play Store"
+  lane :deploy_staging do
+    
+    # Setup keystore
+    UI.message("🚀 Starting deploy_production lane")
+    setup_staging_keystore
+    UI.success("✅ Keystore configurado correctamente")
+    
+    # # Build App Bundle
+    # Dir.chdir("../") do
+    #   UI.message("💻 Compilando App Bundle (flavor: staging)…")
+    #   # sh("flutter", "build", "appbundle", "--flavor", "production", "-t", "lib/main_production.dart", "--release")
+    #   sh("flutter build appbundle --flavor staging -t lib/main_staging.dart --release")
+    #   UI.success("📦 App Bundle construido en build/app/outputs/bundle/stagingRelease/")
+    # end
+    build_aab_staging
+    build_apk_staging
+
+    UI.message("☁️ Subiendo a Google Play (track: staging)…")
+    # Upload to Play Store
+    # upload_to_play_store(
+    #   # Usar track 'production' para producción
+    #   track: 'internal', 
+    #   # json_key: ENV['PLAY_STORE_CONFIG_JSON'],
+    #   json_key: 'fastlane/playstore-credential.json',
+    #   package_name: 'com.jelafintegradores.democicd.test',
+    #   aab: '../build/app/outputs/bundle/stagingRelease/app-staging-release.aab',
+    #   skip_upload_metadata: true,
+    #   skip_upload_images: true,
+    #   skip_upload_screenshots: true,
+    #   skip_upload_changelogs: true,
+    #   # skip_upload_changelogs: false,
+    #   # release_status: 'completed' # 'draft' para pruebas, 'completed' para producción
+    #   release_status: 'draft' # 'draft' para pruebas, 'completed' para producción
+    #   # release_status: 'halted' # 'draft' para pruebas, 'completed' para producción
+
+    # )
+    # UI.success("🎉 ¡Upload completado!")
+  end
 end

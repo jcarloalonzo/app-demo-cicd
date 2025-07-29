@@ -7,6 +7,7 @@
 # https://github.com/marketplace/actions/upload-app-to-testflight
 # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
 
+
 # .github/workflows/flutter-cicd.yml
 # =============================================================================
 # Flutter CI/CD Pipeline - Multi-Flavor (Development, Staging, Production)
@@ -29,14 +30,13 @@
 
 name: Flutter CI/CD
 on:
-  # Se ejecuta cuando se crea un Pull Request hacia estas ramas
+  # Se ejecuta cuando se crea un Pull Request hacia estas ramas  
   pull_request:
     branches:
       - dev
       - test
       - master
-
-  # Se ejecuta cuando se hace push directamente a estas ramas
+  # Se ejecuta cuando se hace push directamente a estas ramas      
   push:
     branches:
       - dev
@@ -56,7 +56,7 @@ env:
 
 jobs:
   prepare:
-    name: 🛠️ Prepare configs
+    name: Prepare configs
     runs-on: ubuntu-latest
     # Condición: Se ejecuta en TODOS los eventos (PR y Push)
     if: |
@@ -66,7 +66,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         #
+
       # Generar cache keys únicas
+      #
+      #
+
       - name: Generate cache keys
         id: cache-keys
         run: |
@@ -76,6 +80,9 @@ jobs:
           echo "pub=${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}" >> $GITHUB_OUTPUT          
           #  ------ Cache key para archivos generados - cambia cuando se modifica código Dart
           echo "build=${{ runner.os }}-build-${{ hashFiles('**/*.dart', '**/pubspec.yaml') }}" >> $GITHUB_OUTPUT
+
+
+
 
       # Intenta recuperar Flutter SDK del cache para acelerar el build
       - name: Cache Flutter SDK
@@ -87,6 +94,7 @@ jobs:
             ~/.flutter-sdk
           key: ${{ steps.cache-keys.outputs.flutter }}
 
+
       # Configura Java (necesario para builds de Android)
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -94,9 +102,15 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
+
+          #
       - name: Mostrar Java dis
         run: echo "${{ env.JAVA_VERSION }}"
         # Instalar flutter sdk
+        #
+
+
+
 
       # Instala Flutter SDK
       - name: Setup Flutter
@@ -105,12 +119,18 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
 
+          #
+          #
       - name: Verificar versión de Flutter
         run: flutter --version
+
+
 
       # Instala las dependencias del proyecto
       - name: Install dependencies
         run: flutter pub get
+
+
 
       # Genera código (para packages como freezed, json_serializable, etc.)
       - name: Run code generation
@@ -131,174 +151,69 @@ jobs:
             lib/**/*.freezed.dart
           retention-days: 1 # Solo necesitamos estos archivos por 1 día
 
-  # ===========================================================================
-  # JOB 2: ANALYZE AND TEST
-  # ===========================================================================
-  # Este job ejecuta el análisis estático y las pruebas unitarias
-  # Se ejecuta en TODOS los PR y cuando se hace push a dev
+
+          
   analyze:
-    name: 🔍 Lint
-    needs: prepare # Espera a que el job 'prepare' termine
+    name: Analyze
+    needs: prepare
     runs-on: ubuntu-latest
-    continue-on-error: true
     if: false
+    continue-on-error: true
     steps:
-      # Clona el repositorio
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Configura Flutter (sin cache porque es más rápido en jobs paralelos)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
 
-      # Descarga las dependencias que preparó el job anterior
       - name: Download dependencies
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
 
-      # Ejecuta el analizador estático de Dart
-      # Esto detecta problemas de código, warnings, errores de sintaxis, etc.
       - name: Analyze code
         run: flutter analyze
 
   test:
-    name: ✍️ Run tests
-    needs: [prepare, analyze] # Espera a que el job 'prepare' termine
+    name: Run tests
+    needs: prepare
     runs-on: ubuntu-latest
-    # if: |
-    #   github.event_name == 'pull_request' ||
-    #   github.event_name == 'push'
     if: false
-
     steps:
-      # Clona el repositorio
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Configura Flutter (sin cache porque es más rápido en jobs paralelos)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
 
-      # Descarga las dependencias que preparó el job anterior
       - name: Download dependencies
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
 
-      # Ejecuta todas las pruebas unitarias y genera reporte de cobertura
       - name: Run tests with coverage
         run: flutter test --coverage
 
-      # Guarda el reporte de cobertura como artifact
-      # Útil para integrarlo con servicios como Codecov
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
           retention-days: 2
-
-      # OPCIONAL: Puedes descomentar esto para enviar la cobertura a Codecov
-      # - name: Upload to Codecov
+      # Opcional...
+      # - name: Coverage Report
       #   uses: codecov/codecov-action@v3
       #   with:
       #     file: ./coverage/lcov.info
       #     flags: unittests
       #     name: codecov-umbrella
-
-  # ===========================================================================
-  # JOB 3: DEPLOY STAGING
-  # ===========================================================================
-  # Este job despliega la app a los entornos de staging/testing
-  # SOLO se ejecuta cuando se hace push a la rama 'test'
-  deploy-staging:
-    name: Deploy to Staging
-    # needs: test # Espera a que 'prepare' termine
-    runs-on: ubuntu-latest
-    environment: staging
-
-    # Condición: SOLO en push a la rama test
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/test'
-    steps:
-      # Clona el repositorio
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # Configura Java (necesario para Android)
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      # Configura Flutter
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: ${{ env.FLUTTER_CHANNEL }}
-
-      #Instala Ruby y configura el entorno para Fastlane
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-          working-directory: android
-      # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
-      - name: Install Fastlane
-        run: gem install fastlane
-
-      # Descarga las dependencias preparadas anteriormente
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
-        with:
-          name: flutter-dependencies
-
-      # Instala las dependencias de Flutter
-      - name: Install Flutter dependencies
-        run: flutter pub get
-
-      - name: Write Play store credential
-        working-directory: android
-        run: |
-          echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > fastlane/playstore-credential.json
-          echo "PLAY_STORE_CONFIG_JSON file created successfully."
-          ls
-          ls -la
-          pwd
-          ls fastlane/
-
-      - name: Run Fastlane lane
-        working-directory: android
-        env:
-          # Keystore (base64), contraseñas y alias desde GitHub Secrets
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          # Ruta al JSON de credenciales de Google Play
-          PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
-        run: |
-          echo "🚀 Ejecutando Fastlane para Android Staging..."
-          fastlane android deploy_staging
-
-      # - name: Upload APK Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: staging-apk
-      #     path: build/app/outputs/flutter-apk/app-staging-release.apk
-
-
-
-
+      #   if: always()
 
   build-production:
     name: Build Production APK
@@ -317,20 +232,6 @@ jobs:
       #     git config --global url."https://${{ secrets.PAT_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       #   if: ${{ secrets.PAT_TOKEN != '' }}
 
-      # Configura Java (necesario para Android)
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      # Configura Flutter
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: ${{ env.FLUTTER_CHANNEL }}
-
       #Instala Ruby y configura el entorno para Fastlane
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -343,15 +244,25 @@ jobs:
       - name: Install Fastlane
         run: gem install fastlane
 
-      # Descarga las dependencias preparadas anteriormente
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      - name: Get Flutter packages
+        run: flutter pub get
+
       - name: Download dependencies
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
-
-      # Instala las dependencias de Flutter
-      - name: Install Flutter dependencies
-        run: flutter pub get
 
       - name: Write Play store credential
         working-directory: android
@@ -380,7 +291,6 @@ jobs:
     # needs: [prepare, test]
     needs: prepare
     runs-on: macos-latest
-    if: false
     environment:
       name: production
       url: https://appstoreconnect.apple.com
