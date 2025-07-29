@@ -489,7 +489,7 @@ jobs:
   # ===========================================================================
   build-android-production:
     name: 🚀🤖 Deploy Android production
-    needs: prepare
+    needs: [analyze, test]
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
     environment: production
