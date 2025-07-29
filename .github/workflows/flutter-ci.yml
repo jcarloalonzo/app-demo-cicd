@@ -291,11 +291,11 @@ jobs:
           echo "🚀 Ejecutando Fastlane para Android Staging..."
           fastlane android deploy_staging
 
-      # - name: Upload APK Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: staging-apk
-      #     path: build/app/outputs/flutter-apk/app-staging-release.apk
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-apk
+          path: build/app/outputs/flutter-apk/app-staging-release.apk
 
 
 
