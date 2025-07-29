@@ -106,8 +106,8 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".test"
             versionNameSuffix = "-test"
-            versionCode = 2
-            versionName = "0.0.2"
+            versionCode = 3
+            versionName = "0.0.3"
                     // Mover esto AQUÍ, fuera de buildTypes
             if (keystoreTestPropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("releaseStaging")
@@ -129,8 +129,8 @@ android {
             dimension = "environment"
             applicationIdSuffix = ""
             versionNameSuffix = ""
-            versionCode = 4
-            versionName = "0.0.4"
+            versionCode = 5
+            versionName = "0.0.5"
             // Mover esto AQUÍ también
             if (keystoreProdPropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("releaseProduction")
