@@ -5,7 +5,6 @@ part 'user.g.dart';
 
 @freezed
 abstract class User with _$User {
-
   factory User({
     required String id,
     required String name,

@@ -112,18 +112,6 @@ android {
             if (keystoreTestPropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("releaseStaging")
             }
-            //signingConfig = signingConfigs.getByName("releaseStaging")
-            // buildTypes {
-            //     getByName("debug") {
-            //         signingConfig = signingConfigs.getByName("debug")
-            //     }
-            //     getByName("release") {
-            //         signingConfig = if (keystoreTestPropertiesFile.exists())
-            //             signingConfigs.getByName("releaseStaging")
-            //         else
-            //             signingConfigs.getByName("debug")
-            //     }
-            // }
         }
         create("production") {
             dimension = "environment"
@@ -135,20 +123,6 @@ android {
             if (keystoreProdPropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("releaseProduction")
             }
-                    
-            //signingConfig = signingConfigs.getByName("releaseProduction")
-            // buildTypes {
-            //     getByName("debug") {
-            //         signingConfig = signingConfigs.getByName("debug")
-            //     }
-            //     getByName("release") {
-            //         signingConfig = if (keystoreProdPropertiesFile.exists())
-            //             signingConfigs.getByName("releaseProduction")
-            //         else
-            //             signingConfigs.getByName("debug")
-            //     }
-            // }
-
         }
     }
 }
