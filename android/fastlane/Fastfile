@@ -50,7 +50,7 @@ private_lane :build_apk_staging do
   Dir.chdir("../") do
     UI.message("💻 Compilando apk (flavor: staging)…")
     sh("flutter build apk --flavor staging -t lib/main_staging.dart --release")
-    sh("find .. -name 'app-production-release.apk'")
+    sh("find .. -name 'app-staging-release.apk'")
     UI.success("📦 App Bundle construido en build/app/outputs/apk/")
   end
 end
