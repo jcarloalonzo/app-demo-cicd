@@ -152,10 +152,6 @@ private_lane :setup_staging_keystore do
   sh("mkdir -p ../app")
   
   # DEBUG info...
-  UI.message("📋 KEYSTORE_BASE64 primeros 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[0..49]}")
-  UI.message("📋 KEYSTORE_BASE64 últimos 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[-50..-1]}")
-  UI.message("📋 KEYSTORE_BASE64 length: #{ENV['KEYSTORE_BASE64'].to_s.length}")
-  
   # Decodificar usando Ruby
   require 'base64'
   keystore_data = Base64.decode64(ENV['KEYSTORE_BASE64'])
@@ -187,12 +183,10 @@ end
 
   desc "Deploy staging App Bundle to Play Store"
   lane :deploy_staging do
-    
     # Setup keystore
     UI.message("🚀 Starting deploy_production lane")
     setup_staging_keystore
     UI.success("✅ Keystore configurado correctamente")
-    
     # # Build App Bundle
     # Dir.chdir("../") do
     #   UI.message("💻 Compilando App Bundle (flavor: staging)…")
@@ -201,27 +195,26 @@ end
     #   UI.success("📦 App Bundle construido en build/app/outputs/bundle/stagingRelease/")
     # end
     build_aab_staging
-    build_apk_staging
 
     UI.message("☁️ Subiendo a Google Play (track: staging)…")
     # Upload to Play Store
-    # upload_to_play_store(
-    #   # Usar track 'production' para producción
-    #   track: 'internal', 
-    #   # json_key: ENV['PLAY_STORE_CONFIG_JSON'],
-    #   json_key: 'fastlane/playstore-credential.json',
-    #   package_name: 'com.jelafintegradores.democicd.test',
-    #   aab: '../build/app/outputs/bundle/stagingRelease/app-staging-release.aab',
-    #   skip_upload_metadata: true,
-    #   skip_upload_images: true,
-    #   skip_upload_screenshots: true,
-    #   skip_upload_changelogs: true,
-    #   # skip_upload_changelogs: false,
-    #   # release_status: 'completed' # 'draft' para pruebas, 'completed' para producción
-    #   release_status: 'draft' # 'draft' para pruebas, 'completed' para producción
-    #   # release_status: 'halted' # 'draft' para pruebas, 'completed' para producción
-
-    # )
-    # UI.success("🎉 ¡Upload completado!")
+    upload_to_play_store(
+      # Usar track 'production' para producción
+      track: 'internal', 
+      # json_key: ENV['PLAY_STORE_CONFIG_JSON'],
+      json_key: 'fastlane/playstore-credential.json',
+      package_name: 'com.jelafintegradores.democicd.test',
+      aab: '../build/app/outputs/bundle/stagingRelease/app-staging-release.aab',
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true,
+      # skip_upload_changelogs: false,
+      # release_status: 'completed' # 'draft' para pruebas, 'completed' para producción
+      release_status: 'draft' # 'draft' para pruebas, 'completed' para producción
+      # release_status: 'halted' # 'draft' para pruebas, 'completed' para producción
+    )
+    UI.success("🎉 ¡Upload completado!")
+    build_apk_staging
   end
 end

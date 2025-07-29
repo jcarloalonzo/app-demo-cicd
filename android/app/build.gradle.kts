@@ -94,8 +94,8 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".test"
             versionNameSuffix = "-test"
-            versionCode = 1
-            versionName = "0.0.1"
+            versionCode = 2
+            versionName = "0.0.2"
             //signingConfig = signingConfigs.getByName("releaseStaging")
             buildTypes {
                 getByName("debug") {
