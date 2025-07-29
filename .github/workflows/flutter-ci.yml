@@ -225,7 +225,7 @@ jobs:
   # Build Android Staging
   # ===========================================================================
   build-android-staging:
-    name: 🚀 Deploy to Staging
+    name: 🚀 Deploy Android Staging
     needs: prepare
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
@@ -465,24 +465,23 @@ jobs:
 
 
 
-
-
-  build-production:
-    name: Build Production APK
-    # needs: [prepare, test]
+ # ===========================================================================
+  # Build Android Staging
+  # ===========================================================================
+  build-android-production:
+    name: 🚀 Deploy Android production
     needs: prepare
-    if: false
+    # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
     environment: production
-    # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Checkout repos
-        uses: actions/checkout@v4
+    if: true
 
-      # - name: Configure Git for private repos
-      #   run: |
-      #     git config --global url."https://${{ secrets.PAT_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-      #   if: ${{ secrets.PAT_TOKEN != '' }}
+    # Condición: SOLO en push a la rama test
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       # Configura Java (necesario para Android)
       - name: Setup Java
@@ -505,7 +504,6 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
           working-directory: android
-
       # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
       - name: Install Fastlane
         run: gem install fastlane
@@ -540,7 +538,92 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           # Ruta al JSON de credenciales de Google Play
           PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
-        run: fastlane android deploy_production
+        run: |
+          echo "🚀 Ejecutando Fastlane para Android Staging..."
+          fastlane android deploy_production
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-apk
+          path: build/app/outputs/flutter-apk/app-production-release.apk
+
+
+
+  # build-production:
+  #   name: Build Production APK
+  #   # needs: [prepare, test]
+  #   needs: prepare
+  #   if: false
+  #   runs-on: ubuntu-latest
+  #   environment: production
+  #   # if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+  #   steps:
+  #     - name: Checkout repos
+  #       uses: actions/checkout@v4
+
+  #     # - name: Configure Git for private repos
+  #     #   run: |
+  #     #     git config --global url."https://${{ secrets.PAT_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+  #     #   if: ${{ secrets.PAT_TOKEN != '' }}
+
+  #     # Configura Java (necesario para Android)
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: ${{ env.JAVA_VERSION }}
+  #         distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+  #     # Configura Flutter
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+  #         channel: ${{ env.FLUTTER_CHANNEL }}
+
+  #     #Instala Ruby y configura el entorno para Fastlane
+  #     - name: Setup Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.2"
+  #         bundler-cache: true
+  #         working-directory: android
+
+  #     # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+  #     - name: Install Fastlane
+  #       run: gem install fastlane
+
+  #     # Descarga las dependencias preparadas anteriormente
+  #     - name: Download dependencies
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: flutter-dependencies
+
+  #     # Instala las dependencias de Flutter
+  #     - name: Install Flutter dependencies
+  #       run: flutter pub get
+
+  #     - name: Write Play store credential
+  #       working-directory: android
+  #       run: |
+  #         echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > fastlane/playstore-credential.json
+  #         echo "PLAY_STORE_CONFIG_JSON file created successfully."
+  #         ls
+  #         ls -la
+  #         pwd
+  #         ls fastlane/
+
+  #     - name: Run Fastlane lane
+  #       working-directory: android
+  #       env:
+  #         # Keystore (base64), contraseñas y alias desde GitHub Secrets
+  #         KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+  #         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+  #         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+  #         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+  #         # Ruta al JSON de credenciales de Google Play
+  #         PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
+  #       run: fastlane android deploy_production
 
 
 
@@ -555,7 +638,7 @@ jobs:
     # needs: [prepare, test]
     needs: prepare
     runs-on: macos-latest
-    if: true
+    if: false
     environment:
       name: production
       url: https://appstoreconnect.apple.com
@@ -705,116 +788,3 @@ jobs:
 
 
 
-
-
-  # build-ios-prod:
-  #   name: Build iOS Production
-  #   # needs: [prepare, test]
-  #   needs: prepare
-  #   runs-on: macos-latest
-  #   if: false
-  #   environment:
-  #     name: production
-  #     url: https://appstoreconnect.apple.com
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #     - name: Select Xcode 16
-  #       uses: maxim-lobanov/setup-xcode@v1
-  #       with:
-  #         xcode-version: "16.2.0" # Puedes usar 'latest' o una versión específica
-
-  #     - name: Setup Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: ${{ env.FLUTTER_VERSION }}
-  #         channel: ${{ env.FLUTTER_CHANNEL }}
-
-  #     - name: Setup Ruby
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: "3.2"
-  #         bundler-cache: true
-  #         working-directory: ios
-
-  #     - name: Download dependencies
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: flutter-dependencies
-  #     - name: Install Flutter dependencies
-  #       run: |
-  #         echo "📦 Installing Flutter dependencies..."
-  #         flutter pub get
-
-  #     - name: Install CocoaPods dependencies
-  #       run: |
-  #         echo "🍫 Installing CocoaPods..."
-  #         cd ios
-  #         pod install
-  #         cd ..
-  #     # CRÍTICO: Agregar este paso
-  #     - name: Build Flutter iOS
-  #       run: |
-  #         echo "🔨 Building Flutter iOS..."
-  #         flutter build ios --release --no-codesign \
-  #           --flavor production \
-  #           --target lib/main_production.dart 
-
-  #     - name: Install Apple Certificate
-  #       uses: apple-actions/import-codesign-certs@v5
-  #       with:
-  #         p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
-  #         p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
-
-  #     - name: Verify code‑sign identities
-  #       run: |
-  #         echo "🔍 Identidades instaladas:"
-  #         security find-identity -p codesigning -v
-
-  #     - name: Install Apple Provisioning Profile
-  #       run: |
-  #         # 1. Crea el directorio donde Xcode busca los perfiles
-  #         mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-
-  #         # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
-  #         echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
-
-  #     - name: Verify Provisioning Profile
-  #       run: |
-  #         echo "🔎 Verificando el perfil de aprovisionamiento..."
-  #         PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
-
-  #         # Comprueba si el archivo existe y no está vacío
-  #         if [ ! -s "$PROFILE_PATH" ]; then
-  #           echo "❌ Error: El archivo del perfil de aprovisionamiento no existe o está vacío."
-  #           exit 1
-  #         fi
-
-  #         # Intenta decodificar el perfil para confirmar que es un archivo válido
-  #         echo "📖 Leyendo el contenido del perfil..."
-  #         security cms -D -i "$PROFILE_PATH"
-
-  #         echo "✅ El perfil de aprovisionamiento parece ser válido."      
-  #         #
-
-  #     - name: List provisioning profiles
-  #       run: |
-  #         echo "📱 Perfiles instalados:"
-  #         ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-
-  #     - name: Crear archivo .p8
-  #       working-directory: ios/fastlane
-  #       run: |
-  #         echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_123.p8
-  #         pwd
-  #         ls -la
-
-  #     - name: Build and deploy with Fastlane
-  #       working-directory: ios
-  #       env:
-  #         APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
-  #         APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-  #         APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-  #       run: |
-  #         bundle exec fastlane deploy_staging

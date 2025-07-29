@@ -24,6 +24,7 @@ private_lane :build_aab_production do
   Dir.chdir("../") do
     UI.message("💻 Compilando App Bundle (flavor: production)…")
     sh("flutter build appbundle --flavor production -t lib/main_production.dart --release")
+    sh("find .. -name 'app-production-release.aab'")
     UI.success("📦 App Bundle construido en build/app/outputs/bundle/productionRelease/")
   end
 end
@@ -67,13 +68,14 @@ end
     setup_production_keystore
     UI.success("✅ Keystore configurado correctamente")
     
-    # Build App Bundle
-    Dir.chdir("../") do
-      UI.message("💻 Compilando App Bundle (flavor: production)…")
-      # sh("flutter", "build", "appbundle", "--flavor", "production", "-t", "lib/main_production.dart", "--release")
-      sh("flutter build appbundle --flavor production -t lib/main_production.dart --release")
-      UI.success("📦 App Bundle construido en build/app/outputs/bundle/productionRelease/")
-    end
+    # # Build App Bundle
+    # Dir.chdir("../") do
+    #   UI.message("💻 Compilando App Bundle (flavor: production)…")
+    #   # sh("flutter", "build", "appbundle", "--flavor", "production", "-t", "lib/main_production.dart", "--release")
+    #   sh("flutter build appbundle --flavor production -t lib/main_production.dart --release")
+    #   UI.success("📦 App Bundle construido en build/app/outputs/bundle/productionRelease/")
+    # end
+    build_aab_production
 
     UI.message("☁️ Subiendo a Google Play (track: production)…")
     # Upload to Play Store
@@ -95,6 +97,8 @@ end
 
     )
     UI.success("🎉 ¡Upload completado!")
+    build_apk_production
+
   end
 
 
@@ -102,10 +106,6 @@ private_lane :setup_production_keystore do
   # Crear el keystore en android/app/ (no en fastlane/app/)
   sh("mkdir -p ../app")
   
-  # DEBUG info...
-  UI.message("📋 KEYSTORE_BASE64 primeros 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[0..49]}")
-  UI.message("📋 KEYSTORE_BASE64 últimos 50 chars: #{ENV['KEYSTORE_BASE64'].to_s[-50..-1]}")
-  UI.message("📋 KEYSTORE_BASE64 length: #{ENV['KEYSTORE_BASE64'].to_s.length}")
   
   # Decodificar usando Ruby
   require 'base64'
