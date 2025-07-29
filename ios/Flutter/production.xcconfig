@@ -1,8 +1,8 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
 
-FLUTTER_BUILD_NAME = 0.0.4
-FLUTTER_BUILD_NUMBER = 4
+FLUTTER_BUILD_NAME = 0.0.5
+FLUTTER_BUILD_NUMBER = 5
 FLUTTER_TARGET = lib/main_production.dart
 TARGET_NAME = CICD
 PREFIX =

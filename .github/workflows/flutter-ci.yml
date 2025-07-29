@@ -26,7 +26,28 @@
 # 4. Tener configurado Firebase App Distribution para staging
 # 5. Tener las cuentas de developer de Google Play y App Store
 # =============================================================================
+# 3. Secrets necesarios:
+# Para que todo funcione correctamente, necesitas configurar estos secrets en GitHub:
+# Para Android:
 
+# KEYSTORE_BASE64: Tu keystore en base64
+# STORE_PASSWORD: Password del keystore
+# KEY_PASSWORD: Password de la key
+# KEY_ALIAS: Alias de la key
+# PLAY_STORE_CONFIG_JSON: Credenciales de Google Play (para production)
+# FIREBASE_SERVICE_ACCOUNT_KEY: Credenciales de Firebase (para staging)
+# FIREBASE_APP_ID_ANDROID_STAGING: ID de la app en Firebase
+
+# Para iOS:
+
+# IOS_P12_CERT_BASE64_STAGING: Certificado para staging
+# IOS_P12_CERT_BASE64_PRODUCTION: Certificado para production
+# IOS_P12_CERT_PASSWORD: Password del certificado
+# IOS_PROVISION_PROFILE_BASE64_STAGING: Perfil para staging
+# IOS_PROVISION_PROFILE_BASE64_PRODUCTION: Perfil para production
+# APPSTORE_API_KEY_ID: ID de la API key de App Store
+# APPSTORE_ISSUER_ID: Issuer ID de App Store
+# APPSTORE_API_PRIVATE_KEY: Private key de App Store
 name: Flutter CI/CD
 on:
   # Se ejecuta cuando se crea un Pull Request hacia estas ramas
@@ -53,7 +74,9 @@ env:
 # =============================================================================
 # JOBS DEL WORKFLOW
 # =============================================================================
-
+  # ===========================================================================
+  # JOB 1: PREPARE (cache, checkout, dependencias)
+  # ===========================================================================
 jobs:
   prepare:
     name: 🛠️ Prepare configs
@@ -141,7 +164,7 @@ jobs:
     needs: prepare # Espera a que el job 'prepare' termine
     runs-on: ubuntu-latest
     continue-on-error: true
-    if: false
+    # Se ejecuta SIEMPRE (en PR y Push a cualquier rama)
     steps:
       # Clona el repositorio
       - name: Checkout Repository
@@ -169,10 +192,7 @@ jobs:
     name: ✍️ Run tests
     needs: [prepare, analyze] # Espera a que el job 'prepare' termine
     runs-on: ubuntu-latest
-    # if: |
-    #   github.event_name == 'pull_request' ||
-    #   github.event_name == 'push'
-    if: false
+    # Se ejecuta SIEMPRE (en PR y Push a cualquier rama)
 
     steps:
       # Clona el repositorio
@@ -213,27 +233,26 @@ jobs:
       #     flags: unittests
       #     name: codecov-umbrella
 
+
   # ===========================================================================
   # JOB 3: DEPLOY STAGING
   # ===========================================================================
   # Este job despliega la app a los entornos de staging/testing
   # SOLO se ejecuta cuando se hace push a la rama 'test'
   
-  
 
   # ===========================================================================
   # Build Android Staging
   # ===========================================================================
   build-android-staging:
-    name: 🚀 Deploy Android Staging
-    needs: prepare
+    name: 🚀🤖 Deploy Android Staging
+    needs: [analyze, test]
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
     environment: production
-    if: true
-
-    # Condición: SOLO en push a la rama test
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    # SOLO se ejecuta en PUSH a la rama test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    
     steps:
       # Clona el repositorio
       - name: Checkout Repository
@@ -311,14 +330,14 @@ jobs:
   # Build IOS Staging
   # ===========================================================================
   build-ios-staging:
-    name: 🚀 Deploy iOS Staging
-    # needs: [prepare, test]
-    needs: prepare
+    name: 🚀🍎 Deploy iOS Staging
+    needs: [analyze, test]
     runs-on: macos-latest
-    if: true
-    environment:
-      name: staging
-      url: https://appstoreconnect.apple.com
+    # SOLO se ejecuta en PUSH a la rama test
+    environment: staging
+    # SOLO se ejecuta en PUSH a la rama test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+
 
     steps:
       # Clona el repositorio
@@ -466,18 +485,16 @@ jobs:
 
 
  # ===========================================================================
-  # Build Android Staging
+  # Build Android production
   # ===========================================================================
   build-android-production:
-    name: 🚀 Deploy Android production
+    name: 🚀🤖 Deploy Android production
     needs: prepare
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
     environment: production
-    if: false
-
-    # Condición: SOLO en push a la rama test
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    # SOLO se ejecuta en PUSH a la rama master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       # Clona el repositorio
       - name: Checkout Repository
@@ -556,11 +573,11 @@ jobs:
   # Build IOS production
   # ===========================================================================
   build-ios-production:
-    name: 🚀 Deploy iOS Production
-    # needs: [prepare, test]
-    needs: prepare
-    runs-on: macos-latest
-    if: false
+    name: 🚀🍎 Deploy IOS Production
+    needs: [analyze, test]
+    runs-on: macos-latest # Es lo mismo que macos-14
+    # SOLO se ejecuta en PUSH a la rama master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     environment:
       name: production
       url: https://appstoreconnect.apple.com
