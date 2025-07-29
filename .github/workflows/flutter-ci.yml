@@ -381,8 +381,8 @@ jobs:
         run: |
           echo "🔨 Building Flutter iOS..."
           flutter build ios --release --no-codesign \
-            --flavor production \
-            --target lib/main_production.dart \
+            --flavor staging \
+            --target lib/main_staging.dart \
 
 
       # Instala el certificado de Apple desde los secrets
