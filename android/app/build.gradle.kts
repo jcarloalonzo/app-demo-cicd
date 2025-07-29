@@ -43,11 +43,23 @@ android {
     }
 
     signingConfigs {
+        // Configuración de debug por defecto.
+        // create("debug") { }
+
         if(keystoreTestPropertiesFile.exists()){
             create("releaseStaging") {
-                keyAlias = keystoreTestProperties["keyAlias"] as String
+                val storeFilePath = keystoreTestProperties["storeFile"] as String
+                val keyAliasValue = keystoreTestProperties["keyAlias"] as String
+                
+                println("=== STAGING SIGNING CONFIG ===")
+                println("storeFile path: $storeFilePath")
+                println("storeFile exists: ${file(storeFilePath).exists()}")
+                println("keyAlias: $keyAliasValue")
+                println("==============================")
+                
+                keyAlias = keyAliasValue
                 keyPassword = keystoreTestProperties["keyPassword"] as String
-                storeFile = file(keystoreTestProperties["storeFile"] ?: "")
+                storeFile = file(storeFilePath)
                 storePassword = keystoreTestProperties["storePassword"] as String
             }
         }
@@ -59,13 +71,23 @@ android {
                 storePassword = keystoreProdProperties["storePassword"] as String
             }
         }
+        println("=== DEBUG KEYSTORE  🚀🚀🚀🚀🚀🚀🚀===")
+  
+
 
     }
 
     buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("releaseProduction")
-            // signingConfig = signingConfigs.getByName("releaseStaging")
+        getByName("debug") {
+            isDebuggable = true
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
+
+        getByName("release") {
+            isDebuggable = false
+            isMinifyEnabled = true
+            // La firma se asignará dinámicamente según el flavor.
         }
     }
 
@@ -84,40 +106,23 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".test"
             versionNameSuffix = "-test"
-            versionCode = 1
-            versionName = "0.0.1"
-            //signingConfig = signingConfigs.getByName("releaseStaging")
-            buildTypes {
-                getByName("debug") {
-                    signingConfig = signingConfigs.getByName("debug")
-                }
-                getByName("release") {
-                    signingConfig = if (keystoreTestPropertiesFile.exists())
-                        signingConfigs.getByName("releaseStaging")
-                    else
-                        signingConfigs.getByName("debug")
-                }
+            versionCode = 4
+            versionName = "0.0.4"
+                    // Mover esto AQUÍ, fuera de buildTypes
+            if (keystoreTestPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("releaseStaging")
             }
         }
         create("production") {
             dimension = "environment"
-            applicationIdSuffix = ".app"
+            applicationIdSuffix = ""
             versionNameSuffix = ""
-            versionCode = 1
-            versionName = "0.0.1"
-            //signingConfig = signingConfigs.getByName("releaseProduction")
-            buildTypes {
-                getByName("debug") {
-                    signingConfig = signingConfigs.getByName("debug")
-                }
-                getByName("release") {
-                    signingConfig = if (keystoreProdPropertiesFile.exists())
-                        signingConfigs.getByName("releaseProduction")
-                    else
-                        signingConfigs.getByName("debug")
-                }
+            versionCode = 6
+            versionName = "0.0.6"
+            // Mover esto AQUÍ también
+            if (keystoreProdPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("releaseProduction")
             }
-
         }
     }
 }

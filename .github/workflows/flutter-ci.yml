@@ -1,0 +1,781 @@
+# https://github.com/marketplace/actions/checkout
+# https://github.com/marketplace/actions/setup-java-jdk
+# https://github.com/marketplace/actions/flutter-action
+# https://github.com/marketplace/actions/upload-a-build-artifact
+# https://github.com/marketplace/actions/import-code-signing-certificates
+# https://github.com/marketplace/actions/apple-provisioning-profile-action
+# https://github.com/marketplace/actions/upload-app-to-testflight
+# https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+
+# .github/workflows/flutter-cicd.yml
+# =============================================================================
+# Flutter CI/CD Pipeline - Multi-Flavor (Development, Staging, Production)
+# =============================================================================
+# Este workflow maneja el ciclo completo de CI/CD para una aplicación Flutter
+# con 3 flavors/entornos diferentes.
+#
+# ESTRUCTURA DE RAMAS Y ACCIONES:
+# - dev:    PR → Linter + Tests | Push → Linter + Tests
+# - test:   PR → Linter + Tests | Push → Deploy a Staging
+# - master: PR → Linter + Tests | Push → Deploy a Production
+#
+# REQUISITOS PREVIOS:
+# 1. Configurar los flavors en tu proyecto Flutter (development, staging, production)
+# 2. Configurar Fastlane en las carpetas android/ e ios/
+# 3. Configurar todos los secrets necesarios en GitHub
+# 4. Tener configurado Firebase App Distribution para staging
+# 5. Tener las cuentas de developer de Google Play y App Store
+# =============================================================================
+# 3. Secrets necesarios:
+# Para que todo funcione correctamente, necesitas configurar estos secrets en GitHub:
+# Para Android:
+
+# KEYSTORE_BASE64: Tu keystore en base64
+# STORE_PASSWORD: Password del keystore
+# KEY_PASSWORD: Password de la key
+# KEY_ALIAS: Alias de la key
+# PLAY_STORE_CONFIG_JSON: Credenciales de Google Play (para production)
+# FIREBASE_SERVICE_ACCOUNT_KEY: Credenciales de Firebase (para staging)
+# FIREBASE_APP_ID_ANDROID_STAGING: ID de la app en Firebase
+
+# Para iOS:
+
+# IOS_P12_CERT_BASE64_STAGING: Certificado para staging
+# IOS_P12_CERT_BASE64_PRODUCTION: Certificado para production
+# IOS_P12_CERT_PASSWORD: Password del certificado
+# IOS_PROVISION_PROFILE_BASE64_STAGING: Perfil para staging
+# IOS_PROVISION_PROFILE_BASE64_PRODUCTION: Perfil para production
+# APPSTORE_API_KEY_ID: ID de la API key de App Store
+# APPSTORE_ISSUER_ID: Issuer ID de App Store
+# APPSTORE_API_PRIVATE_KEY: Private key de App Store
+name: Flutter CI/CD
+on:
+  # Se ejecuta cuando se crea un Pull Request hacia estas ramas
+  pull_request:
+    branches:
+      - dev
+      - test
+      - master
+
+  # Se ejecuta cuando se hace push directamente a estas ramas
+  push:
+    branches:
+      - dev
+      - test
+      - master
+# Variables globales del workflow - Úsalas para mantener consistencia
+env:
+  # Versión de Flutter a usar en todo el pipeline
+  FLUTTER_CHANNEL: stable
+  FLUTTER_VERSION: "3.29.3"
+  # Configuración de Java para builds de Android
+  JAVA_VERSION: "17"
+  JAVA_DISTRIBUTION: "temurin" # Distribución recomendada para Android/Flutter
+# =============================================================================
+# JOBS DEL WORKFLOW
+# =============================================================================
+
+jobs:
+  quick-check-pr:
+    name: ✍️👀 Quick Check PR
+    runs-on: ubuntu-latest
+    # Se ejecuta SOLO en Pull Requests
+    if: github.event_name == 'pull_request'
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Flutter (sin cache porque es más rápido en jobs paralelos)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+
+      # Instala las dependencias del proyecto
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Genera código (para packages como freezed, json_serializable, etc.)
+      - name: Run code generation
+        run: |
+          # El flag --delete-conflicting-outputs previene errores por archivos existentes
+          flutter pub run build_runner build --delete-conflicting-outputs          
+
+      # Ejecuta el analizador estático de Dart
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      # # Comentario automático en el PR con el resultado
+      # - name: PR Comment
+      #   if: always()
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       const success = '${{ job.status }}' === 'success';
+      #       const emoji = success ? '✅' : '❌';
+      #       const status = success ? 'passed' : 'failed';
+            
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: `${emoji} **Quick checks ${status}!**\n\nCommit: ${{ github.event.pull_request.head.sha }}`
+      #       })
+
+
+  # ===========================================================================
+  # JOB 1: PREPARE (cache, checkout, dependencias)
+  # ===========================================================================
+  prepare:
+    name: 🛠️ Prepare configs
+    runs-on: ubuntu-latest
+    # Condición: Se ejecuta en TODOS los eventos (PR y Push)
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        #
+      # Generar cache keys únicas
+      - name: Generate cache keys
+        id: cache-keys
+        run: |
+          #  ------ Cache key para Flutter SDK - cambia cuando actualizamos la versión
+          echo "flutter=${{ runner.os }}-flutter-${{ env.FLUTTER_VERSION }}" >> $GITHUB_OUTPUT
+          #  ------ Cache key para dependencias pub - cambia cuando se modifica pubspec.lock
+          echo "pub=${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}" >> $GITHUB_OUTPUT          
+          #  ------ Cache key para archivos generados - cambia cuando se modifica código Dart
+          echo "build=${{ runner.os }}-build-${{ hashFiles('**/*.dart', '**/pubspec.yaml') }}" >> $GITHUB_OUTPUT
+
+      # Intenta recuperar Flutter SDK del cache para acelerar el build
+      - name: Cache Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+            ~/.flutter-sdk
+          key: ${{ steps.cache-keys.outputs.flutter }}
+
+      # Configura Java (necesario para builds de Android)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      # - name: Mostrar Java dis
+      #   run: echo "${{ env.JAVA_VERSION }}"
+
+      # Instala Flutter SDK
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      # - name: Verificar versión de Flutter
+      #   run: flutter --version
+
+      # Instala las dependencias del proyecto
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Genera código (para packages como freezed, json_serializable, etc.)
+      - name: Run code generation
+        run: |
+          # El flag --delete-conflicting-outputs previene errores por archivos existentes
+          flutter pub run build_runner build --delete-conflicting-outputs
+
+      # Sube las dependencias como artifacts para que otros jobs las usen
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-dependencies
+          path: |
+            .dart_tool/
+            .packages
+            pubspec.lock
+            lib/**/*.g.dart
+            lib/**/*.freezed.dart
+          retention-days: 1 # Solo necesitamos estos archivos por 1 día
+
+  # ===========================================================================
+  # JOB 2: ANALYZE AND TEST
+  # ===========================================================================
+  # Este job ejecuta el análisis estático y las pruebas unitarias
+  # Se ejecuta en TODOS los PR y cuando se hace push a dev
+  analyze:
+    name: 🔍 Lint
+    needs: prepare # Espera a que el job 'prepare' termine
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    # Se ejecuta SIEMPRE (en PR y Push a cualquier rama)
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Flutter (sin cache porque es más rápido en jobs paralelos)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      # Descarga las dependencias que preparó el job anterior
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      # Ejecuta el analizador estático de Dart
+      # Esto detecta problemas de código, warnings, errores de sintaxis, etc.
+      - name: Analyze code
+        run: flutter analyze
+
+  test:
+    name: ✍️ Run tests
+    needs: [prepare, analyze] # Espera a que el job 'prepare' termine
+    runs-on: ubuntu-latest
+    # Se ejecuta SIEMPRE (en PR y Push a cualquier rama)
+
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Flutter (sin cache porque es más rápido en jobs paralelos)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      # Descarga las dependencias que preparó el job anterior
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      # Ejecuta todas las pruebas unitarias y genera reporte de cobertura
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      # Guarda el reporte de cobertura como artifact
+      # Útil para integrarlo con servicios como Codecov
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 2
+
+      # OPCIONAL: Puedes descomentar esto para enviar la cobertura a Codecov
+      # - name: Upload to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./coverage/lcov.info
+      #     flags: unittests
+      #     name: codecov-umbrella
+
+
+  # ===========================================================================
+  # JOB 3: DEPLOY STAGING
+  # ===========================================================================
+  # Este job despliega la app a los entornos de staging/testing
+  # SOLO se ejecuta cuando se hace push a la rama 'test'
+  
+
+  # ===========================================================================
+  # Build Android Staging
+  # ===========================================================================
+  build-android-staging:
+    name: 🚀🤖 Deploy Android Staging
+    needs: [analyze, test]
+    # needs: test # Espera a que 'prepare' termine
+    runs-on: ubuntu-latest
+    environment: production
+    # SOLO se ejecuta en PUSH a la rama test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Java (necesario para Android)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      # Configura Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      #Instala Ruby y configura el entorno para Fastlane
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: android
+      # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      # Descarga las dependencias preparadas anteriormente
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      # Instala las dependencias de Flutter
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Write Play store credential
+        working-directory: android
+        run: |
+          echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > fastlane/playstore-credential.json
+          echo "PLAY_STORE_CONFIG_JSON file created successfully."
+          ls
+          ls -la
+          pwd
+          ls fastlane/
+
+      - name: Run Fastlane lane
+        working-directory: android
+        env:
+          # Keystore (base64), contraseñas y alias desde GitHub Secrets
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          # Ruta al JSON de credenciales de Google Play
+          PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
+        run: |
+          echo "🚀 Ejecutando Fastlane para Android Staging..."
+          fastlane android deploy_staging
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-apk
+          path: build/app/outputs/flutter-apk/app-staging-release.apk
+
+
+
+
+  # ===========================================================================
+  # Build IOS Staging
+  # ===========================================================================
+  build-ios-staging:
+    name: 🚀🍎 Deploy iOS Staging
+    needs: [analyze, test]
+    runs-on: macos-latest
+    # SOLO se ejecuta en PUSH a la rama test
+    environment: staging
+    # SOLO se ejecuta en PUSH a la rama test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+
+
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Xcode (necesario para builds de iOS)
+      # Asegúrate de que la versión de Xcode sea compatible con tu proyecto Flutter
+      # Puedes usar 'latest' o una versión específica  
+      - name: Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.2.0" # Puedes usar 'latest' o una versión específica
+
+      # Configura Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      #Instala Ruby y configura el entorno para Fastlane
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: ios
+
+      # Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      # Descarga las dependencias preparadas anteriormente
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      # Instala las dependencias de Flutter
+      - name: Install Flutter dependencies
+        run: |
+          echo "📦 Installing Flutter dependencies..."
+          flutter pub get
+
+      # Instala las dependencias de CocoaPods (necesario para iOS)
+      # Asegúrate de que el archivo Podfile esté configurado correctamente
+      # y que tengas un Podfile.lock actualizado
+      # Esto es crítico para evitar problemas de dependencias en iOS
+      - name: Install CocoaPods dependencies
+        run: |
+          echo "🍫 Installing CocoaPods..."
+          cd ios
+          pod install
+          cd ..
+
+      # CRÍTICO: Agregar este paso
+      # Este paso es esencial para compilar la app iOS
+      - name: Build Flutter iOS
+        run: |
+          echo "🔨 Building Flutter iOS..."
+          flutter build ios --release --no-codesign \
+            --flavor staging \
+            --target lib/main_staging.dart \
+
+
+      # Instala el certificado de Apple desde los secrets
+      # Asegúrate de que el certificado esté en formato .p12 y que tengas
+      # el password correcto configurado en los secrets de GitHub
+      # Este paso es crítico para poder firmar la app iOS
+      - name: Install Apple Certificate
+        uses: apple-actions/import-codesign-certs@v5
+        with:
+          p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
+
+      # Verifica las identidades de firma de código instaladas
+      # Esto es útil para depurar problemas de firma
+      - name: Verify code‑sign identities
+        run: |
+          echo "🔍 Identidades instaladas:"
+          security find-identity -p codesigning -v
+
+      # Instala el perfil de aprovisionamiento de Apple desde los secrets
+      # Asegúrate de que el perfil esté en formato .mobileprovision y que
+      # tengas el perfil correcto configurado en los secrets de GitHub
+      - name: Install Apple Provisioning Profile
+        run: |
+          # 1. Crea el directorio donde Xcode busca los perfiles
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
+          echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/JessmarDistProfileDemoTest.mobileprovision"
+
+      # Verifica el perfil de aprovisionamiento instalado
+      # Este paso es crítico para asegurarse de que el perfil es válido
+      - name: Verify Provisioning Profile
+        run: |
+          echo "🔎 Verificando el perfil de aprovisionamiento..."
+          PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/JessmarDistProfileDemoTest.mobileprovision"
+
+          # Comprueba si el archivo existe y no está vacío
+          if [ ! -s "$PROFILE_PATH" ]; then
+            echo "❌ Error: El archivo del perfil de aprovisionamiento no existe o está vacío."
+            exit 1
+          fi
+
+          # Intenta decodificar el perfil para confirmar que es un archivo válido
+          echo "📖 Leyendo el contenido del perfil..."
+          security cms -D -i "$PROFILE_PATH"
+
+          echo "✅ El perfil de aprovisionamiento parece ser válido."      
+          #
+
+      # Lista los perfiles de aprovisionamiento instalados
+      # Esto es útil para depurar problemas de firma y verificar que el perfil correcto está instalado
+      - name: List provisioning profiles
+        run: |
+          echo "📱 Perfiles instalados:"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      # Crea el archivo .p8 necesario para la autenticación con App Store Connect
+      # Asegúrate de que el secret APPSTORE_API_PRIVATE_KEY esté configurado correctamente
+      # Este paso es crítico para poder subir la app a TestFlight o App Store
+      - name: Crear archivo .p8
+        working-directory: ios/fastlane
+        run: |
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_id_api_key.p8
+          pwd
+          ls -la
+
+      # Ejecuta Fastlane para construir y desplegar la app iOS
+      - name: Build and deploy with Fastlane
+        working-directory: ios
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          echo "🚀 Ejecutando Fastlane para ios Staging..."
+          bundle exec fastlane deploy_staging
+
+
+
+
+
+ # ===========================================================================
+  # Build Android production
+  # ===========================================================================
+  build-android-production:
+    name: 🚀🤖 Deploy Android production
+    needs: [analyze, test]
+    # needs: test # Espera a que 'prepare' termine
+    runs-on: ubuntu-latest
+    environment: production
+    # SOLO se ejecuta en PUSH a la rama master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Java (necesario para Android)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      # Configura Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      #Instala Ruby y configura el entorno para Fastlane
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: android
+      # 3. Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      # Descarga las dependencias preparadas anteriormente
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      # Instala las dependencias de Flutter
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Write Play store credential
+        working-directory: android
+        run: |
+          echo "${{ secrets.PLAY_STORE_CONFIG_JSON }}" | base64 -d > fastlane/playstore-credential.json
+          echo "PLAY_STORE_CONFIG_JSON file created successfully."
+          ls
+          ls -la
+          pwd
+          ls fastlane/
+
+      - name: Run Fastlane lane
+        working-directory: android
+        env:
+          # Keystore (base64), contraseñas y alias desde GitHub Secrets
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          # Ruta al JSON de credenciales de Google Play
+          PLAY_STORE_CONFIG_JSON: ${{ secrets.PLAY_STORE_CONFIG_JSON }}
+        run: |
+          echo "🚀 Ejecutando Fastlane para Android Staging..."
+          fastlane android deploy_production
+
+      # - name: Upload APK Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: production-apk
+      #     path: build/app/outputs/flutter-apk/app-production-release.apk
+
+
+
+
+
+  # ===========================================================================
+  # Build IOS production
+  # ===========================================================================
+  build-ios-production:
+    name: 🚀🍎 Deploy IOS Production
+    needs: [analyze, test]
+    runs-on: macos-latest # Es lo mismo que macos-14
+    # SOLO se ejecuta en PUSH a la rama master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    environment:
+      name: production
+      url: https://appstoreconnect.apple.com
+
+    steps:
+      # Clona el repositorio
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configura Xcode (necesario para builds de iOS)
+      # Asegúrate de que la versión de Xcode sea compatible con tu proyecto Flutter
+      # Puedes usar 'latest' o una versión específica  
+      - name: Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.2.0" # Puedes usar 'latest' o una versión específica
+
+      # Configura Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      #Instala Ruby y configura el entorno para Fastlane
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: ios
+
+      # Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      # Descarga las dependencias preparadas anteriormente
+      - name: Download dependencies
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-dependencies
+
+      # Instala las dependencias de Flutter
+      - name: Install Flutter dependencies
+        run: |
+          echo "📦 Installing Flutter dependencies..."
+          flutter pub get
+
+      # Instala las dependencias de CocoaPods (necesario para iOS)
+      # Asegúrate de que el archivo Podfile esté configurado correctamente
+      # y que tengas un Podfile.lock actualizado
+      # Esto es crítico para evitar problemas de dependencias en iOS
+      - name: Install CocoaPods dependencies
+        run: |
+          echo "🍫 Installing CocoaPods..."
+          cd ios
+          pod install
+          cd ..
+
+      # CRÍTICO: Agregar este paso
+      # Este paso es esencial para compilar la app iOS
+      - name: Build Flutter iOS
+        run: |
+          echo "🔨 Building Flutter iOS..."
+          flutter build ios --release --no-codesign \
+            --flavor production \
+            --target lib/main_production.dart 
+
+
+      # Instala el certificado de Apple desde los secrets
+      # Asegúrate de que el certificado esté en formato .p12 y que tengas
+      # el password correcto configurado en los secrets de GitHub
+      # Este paso es crítico para poder firmar la app iOS
+      - name: Install Apple Certificate
+        uses: apple-actions/import-codesign-certs@v5
+        with:
+          p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
+
+      # Verifica las identidades de firma de código instaladas
+      # Esto es útil para depurar problemas de firma
+      - name: Verify code‑sign identities
+        run: |
+          echo "🔍 Identidades instaladas:"
+          security find-identity -p codesigning -v
+
+      # Instala el perfil de aprovisionamiento de Apple desde los secrets
+      # Asegúrate de que el perfil esté en formato .mobileprovision y que
+      # tengas el perfil correcto configurado en los secrets de GitHub
+      - name: Install Apple Provisioning Profile
+        run: |
+          # 1. Crea el directorio donde Xcode busca los perfiles
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
+          echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/JessmarDistProfileDemo.mobileprovision"
+
+      # Verifica el perfil de aprovisionamiento instalado
+      # Este paso es crítico para asegurarse de que el perfil es válido
+      - name: Verify Provisioning Profile
+        run: |
+          echo "🔎 Verificando el perfil de aprovisionamiento..."
+          PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/JessmarDistProfileDemo.mobileprovision"
+
+          # Comprueba si el archivo existe y no está vacío
+          if [ ! -s "$PROFILE_PATH" ]; then
+            echo "❌ Error: El archivo del perfil de aprovisionamiento no existe o está vacío."
+            exit 1
+          fi
+
+          # Intenta decodificar el perfil para confirmar que es un archivo válido
+          echo "📖 Leyendo el contenido del perfil..."
+          security cms -D -i "$PROFILE_PATH"
+
+          echo "✅ El perfil de aprovisionamiento parece ser válido."      
+          #
+
+      # Lista los perfiles de aprovisionamiento instalados
+      # Esto es útil para depurar problemas de firma y verificar que el perfil correcto está instalado
+      - name: List provisioning profiles
+        run: |
+          echo "📱 Perfiles instalados:"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      # Crea el archivo .p8 necesario para la autenticación con App Store Connect
+      # Asegúrate de que el secret APPSTORE_API_PRIVATE_KEY esté configurado correctamente
+      # Este paso es crítico para poder subir la app a TestFlight o App Store
+      - name: Crear archivo .p8
+        working-directory: ios/fastlane
+        run: |
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_id_api_key.p8
+          pwd
+          ls -la
+
+      # Ejecuta Fastlane para construir y desplegar la app iOS
+      - name: Build and deploy with Fastlane
+        working-directory: ios
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          echo "🚀 Ejecutando Fastlane para ios Staging..."
+          bundle exec fastlane deploy_production
+
+
+
+
+

@@ -1,0 +1,12 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include "Generated.xcconfig"
+
+FLUTTER_BUILD_NAME = 0.0.4
+FLUTTER_BUILD_NUMBER = 4
+FLUTTER_TARGET = lib/main_staging.dart
+TARGET_NAME = CICD Test
+PREFIX = .test
+SUFFIX_NAME = -test
+ICON_ASSET = AppIcon-test
+FLAVOR= staging
+APP_BUNDLE = com.jelafintegradores.democicd.test

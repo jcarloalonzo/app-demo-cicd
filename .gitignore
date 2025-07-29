@@ -44,7 +44,17 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-
-
 key.production.properties
 key.staging.properties
+
+# FVM Version Cache
+.fvm/
+
+
+# Local configuration files
+*.g.dart
+*.gen.dart
+*.freezed.dart
+
+
+android/fastlane/playstore-credential.json

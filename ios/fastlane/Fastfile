@@ -1,0 +1,215 @@
+# =============================================================================
+# FASTLANE TEMPLATE: BUILD Y DEPLOY A TESTFLIGHT CON FIRMA MANUAL
+# =============================================================================
+# Este archivo sirve como template para configurar builds y deploys a TestFlight
+# usando firma manual de código. Útil cuando no quieres usar match o gestión
+# automática de certificados.
+#
+# REQUISITOS PREVIOS:
+# - Certificado de distribución instalado en el Keychain
+# - Provisioning Profile de distribución descargado
+# - API Key de App Store Connect configurada
+# - Variables de entorno configuradas (ver sección de configuración)
+# =============================================================================
+
+
+
+# Define la plataforma por defecto como iOS
+# Esto evita tener que especificar la plataforma en cada comando
+
+default_platform(:ios)
+
+platform :ios do
+
+  # =============================================================================
+  # CONFIGURACIÓN COMÚN
+  # =============================================================================
+  # Hash que contiene la configuración compartida entre todas las lanes
+  # Esto evita duplicar valores y facilita el mantenimiento
+  # Configuración común para todos los ambientes
+  COMMON = {
+    workspace: "Runner.xcworkspace",
+    project: "Runner.xcodeproj",
+    team_id: "GDQCANTTZ3",
+    code_sign_identity: "iPhone Distribution: Jessmar Perez (GDQCANTTZ3)"
+  }
+
+
+  ENVIRONMENTS = {
+    staging: {
+      bundle_id: "com.jelafintegradores.democicd.test",
+      scheme: "staging",
+      configuration: "Release-staging",
+      profile_name: "JessmarDistProfileDemoTest",
+      output_name: "app-staging.ipa",
+      # Opciones específicas de TestFlight para staging
+      # testflight_groups: ["Internal Testers", "QA Team"],
+      # distribute_external: false
+    },
+    production: {
+      bundle_id: "com.jelafintegradores.democicd",
+      scheme: "production", 
+      configuration: "Release-production",
+      profile_name: "JessmarDistProfileDemo",
+      output_name: "app-production.ipa",
+      # Opciones específicas de TestFlight para production
+      # testflight_groups: ["Beta Testers", "External Testers"],
+      # distribute_external: true
+    }
+  }
+
+
+  #  =============================================================================
+
+  # after_all se ejecuta después de cualquier lane exitosa
+  after_all do |lane|
+    # Limpia archivos temporales
+    clean_build_artifacts
+    # Notificación de éxito (personalizar según necesidades)
+    notification(subtitle: "Fastlane", message: "✅ #{lane} completada exitosamente")
+  end
+
+  # error se ejecuta si alguna lane falla
+  error do |lane, exception|
+    # Limpia archivos incluso si hay error
+    clean_build_artifacts
+    # Notificación de error
+    notification(subtitle: "Fastlane Error", message: "❌ #{lane} falló: #{exception.message}")
+    
+    # Si estás usando Slack, Discord, etc., puedes notificar aquí
+    # slack(
+    #   message: "Deploy fallido: #{exception.message}",
+    #   success: false
+    # )
+  end
+
+  # ===========================================================================
+
+ private_lane :build_ipa do |options|
+   # Obtiene la configuración del ambiente
+    env = options[:environment]
+    config = ENVIRONMENTS[env]
+    UI.message("🔧 Compilando IPA para #{env}...")
+
+    # Configura la firma manual
+    update_code_signing_settings( 
+      use_automatic_signing: false, # Desactiva la firma automática de Xcode
+      path: COMMON[:project],  # Ruta al archivo .xcodeproj
+      targets: ["Runner"], # Array de targets a configurar (normalmente solo uno)
+      build_configurations: [config[:configuration]], # Configuración de build específica (debe existir en Xcode) - -En tu scheme de Xcode, verifica en Archive > que dice
+      profile_name: config[:profile_name],   # tu provisioning profile de distribución
+      code_sign_identity: COMMON[:code_sign_identity] # el certificado exacto en tu keychain
+    )
+    
+    # Compila la IPA
+    build_app(
+      workspace: COMMON[:workspace],
+      scheme: config[:scheme],  # Scheme de tu app
+      configuration: config[:configuration],  # Configuración personalizada
+      export_method: "app-store", # Método de exportación
+      output_directory: COMMON[:output_directory], # Directorio donde se guardará la IPA
+      output_name: config[:output_name], # Nombre de la IPA generada
+      clean: true, # Limpia antes de compilar
+      skip_profile_detection: true,  # Evita que Gym intente detectar perfiles automáticamente
+      export_options: {
+        provisioningProfiles: {
+          config[:bundle_id] => config[:profile_name] # Nombre del perfil de aprovisionamiento
+        },
+        signingStyle: "manual", # Estilo de firma manual
+        teamID: COMMON[:team_id]   # Este teamID debe coincidir con el del perfil de aprovisionamiento
+      }
+    )
+ end
+
+
+  # ===========================================================================
+  # LANE PRINCIPAL: deploy
+  # ===========================================================================
+  # Lane genérica que funciona para cualquier ambiente
+  desc "Build y deploy a TestFlight para el ambiente especificado"
+  lane :deploy do |options|
+    # Determina el ambiente (por defecto staging)
+    environment = options[:environment]
+    
+    # Valida que el ambiente exista
+    unless ENVIRONMENTS[environment]
+      UI.user_error!("❌ Ambiente inválido: #{environment}. Disponibles: #{ENVIRONMENTS.keys.join(', ')}")
+    end
+    
+    UI.header("🚀 DEPLOY #{environment.to_s.upcase} A TESTFLIGHT")
+    
+    # Paso 1: Compilar
+    build_ipa(environment: environment)
+    
+    # Paso 2: Configurar API Key
+      # __FILE__ es la ruta de este archivo, File.dirname obtiene su directorio      
+    # Obtiene la ruta de la carpeta donde está este Fastfile (es decir, .../ios/fastlane)
+    fastlane_dir = File.dirname(__FILE__) 
+
+    # Crea la ruta completa y correcta al archivo
+    key_path = File.expand_path("AuthKey_id_api_key.p8", fastlane_dir) 
+
+    # Paso 3: Subir a TestFlight
+    config = ENVIRONMENTS[environment]
+
+
+    # 1) Creamos objeto API Key
+    api_key = app_store_connect_api_key(
+      key_id:       "#{ENV['APPSTORE_API_KEY_ID']}", # ID de la API Key (desde variables de entorno)
+      issuer_id:    "#{ENV['APPSTORE_ISSUER_ID']}", # Issuer ID de tu cuenta (desde variables de entorno)
+      key_filepath: key_path
+        #     # ALTERNATIVA: Si tienes el contenido del .p8 en una variable (útil para CI/CD):
+     # key_content: ENV['APPSTORE_API_PRIVATE_KEY']
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      # groups: config[:testflight_groups],
+      # distribute_external: config[:distribute_external],
+      # changelog: ENV['RELEASE_NOTES'] || "Mejoras y correcciones de bugs"
+    )
+    
+    UI.success("🎉 Deploy de #{environment} completado exitosamente")
+  end 
+
+
+  # ===========================================================================
+  # LANES DE CONVENIENCIA
+  # ===========================================================================
+  # Shortcuts para cada ambiente - más fácil de recordar y usar
+  desc "Deploy Staging a TestFlight"
+  lane :deploy_staging do
+    deploy(environment: :staging)
+  end
+
+  desc "Deploy Production a TestFlight"
+  lane :deploy_production do
+    deploy(environment: :production)
+  end
+
+end
+
+
+
+
+
+# =============================================================================
+# GUÍA DE USO
+# =============================================================================
+# 
+# COMANDOS DISPONIBLES:
+#   fastlane deploy_staging      # Deploy a staging
+#   fastlane deploy_production   # Deploy a production
+#   fastlane deploy environment:staging   # Forma genérica
+#
+# VARIABLES DE ENTORNO REQUERIDAS:
+#   APPSTORE_API_KEY_ID          # ID de tu API Key
+#   APPSTORE_ISSUER_ID           # Issuer ID de App Store Connect
+#   APPSTORE_API_PRIVATE_KEY     # Contenido del .p8 (opcional si tienes archivo)
+#   RELEASE_NOTES                # Notas de la versión (opcional)
+#
+# PARA AGREGAR UN NUEVO AMBIENTE:
+#   1. Agrega una nueva entrada en ENVIRONMENTS
+#   2. Crea una lane de conveniencia (opcional)
+#   3. Asegúrate de tener el provisioning profile correspondiente
