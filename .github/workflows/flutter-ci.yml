@@ -542,11 +542,11 @@ jobs:
           echo "🚀 Ejecutando Fastlane para Android Staging..."
           fastlane android deploy_production
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: production-apk
-          path: build/app/outputs/flutter-apk/app-production-release.apk
+      # - name: Upload APK Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: production-apk
+      #     path: build/app/outputs/flutter-apk/app-production-release.apk
 
 
 
@@ -638,7 +638,7 @@ jobs:
     # needs: [prepare, test]
     needs: prepare
     runs-on: macos-latest
-    if: false
+    if: true
     environment:
       name: production
       url: https://appstoreconnect.apple.com

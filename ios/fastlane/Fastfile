@@ -83,114 +83,7 @@ platform :ios do
     # )
   end
 
-
-
-  # =============================================================================
-  # LANE PRIVADA: build_staging
-  # =============================================================================
-  # Lane privada (no se puede llamar directamente desde CLI)
-  # Se encarga solo de compilar el IPA con firma manual
-  # desc "Build production TestFlight IPA con firma manual"
-  # private_lane :build_staging do 
-  #   UI.message("🔧 [build_staging] Compilando IPA con firma manual…")
-
-  #   # -----------------------------------------------------------------------------
-  #   # PASO 1: CONFIGURAR FIRMA MANUAL
-  #   # -----------------------------------------------------------------------------
-  #   # Actualiza la configuración de firma de código en el proyecto Xcode
-  #   # Esto es necesario porque estamos usando firma manual en lugar de automática
-  #   update_code_signing_settings(
-  #     use_automatic_signing: false,  # Desactiva la firma automática de Xcode
-  #     path: COMMON[:project],  # Ruta al archivo .xcodeproj
-  #     targets: ["Runner"],  # Array de targets a configurar (normalmente solo uno)
-  #     build_configurations: ["Release-staging"],    # Configuración de build específica (debe existir en Xcode) - -En tu scheme de Xcode, verifica en Archive > que dice
-  #     profile_name: "JessmarDistProfileDemoTest",       # tu provisioning profile de distribución
-  #     code_sign_identity: COMMON[:code_sign_identity]  # el certificado exacto en tu keychain
-  #   )
-
-
-  #   # -----------------------------------------------------------------------------
-  #   # PASO 2: COMPILAR LA IPA
-  #   # -----------------------------------------------------------------------------
-  #   # build_app es el comando principal para compilar la aplicación
-  #   # También conocido como 'gym' en versiones anteriores de Fastlane
-  #   build_app(
-  #     workspace:              COMMON[:workspace],
-  #     scheme:                 "staging", # Scheme de tu app
-  #     configuration:          "Release-staging", # Configuración personalizada
-  #     export_method:          "app-store", # Método de exportación
-  #     output_directory:       "./build", # Directorio donde se guardará la IPA
-  #     output_name:            "app-staging.ipa", # Nombre de la IPA generada
-  #     clean: true, # Limpia antes de compilar
-  #     skip_profile_detection: true, # Evita que Gym intente detectar perfiles automáticamente
-  #     export_options: {
-  #       provisioningProfiles: {
-  #         "com.jelafintegradores.democicd.test" => "JessmarDistProfileDemoTest" # Nombre del perfil de aprovisionamiento
-  #       }, 
-  #       signingStyle: "manual",  # Estilo de firma manual
-  #       # Este teamID debe coincidir con el del perfil de aprovisionamiento
-  #       teamID:       COMMON[:team_id]
-  #     }
-  #   )
-  # end
-
-  #   desc "Deploy Staging a TestFlight"
-  #   lane :deploy_testflight_staging do
-  #     UI.message("🚀 [deploy_testflight_staging] Iniciando build y upload a TestFlight…")
-
-  #   # -----------------------------------------------------------------------------
-  #   # PASO 1: COMPILAR LA APLICACIÓN
-  #   # -----------------------------------------------------------------------------
-  #   # Llama a la lane privada build_staging para crear el IPA
-  #     build_staging 
-
-
-  #   # -----------------------------------------------------------------------------
-  #     # PASO 2: CONFIGURAR API KEY PARA APP STORE CONNECT
-  #     # -----------------------------------------------------------------------------
-  #     # Obtiene la ruta absoluta de la carpeta fastlane
-  #     # __FILE__ es la ruta de este archivo, File.dirname obtiene su directorio      
-  #     # Obtiene la ruta de la carpeta donde está este Fastfile (es decir, .../ios/fastlane)
-  #     fastlane_dir = File.dirname(__FILE__) 
-  #  # Construye la ruta completa al archivo de API Key (.p8)
-  #   # File.expand_path convierte rutas relativas en absolutas
-  #     key_path = File.expand_path("AuthKey_id_api_key.p8", fastlane_dir) 
-  #     # Creamos objeto API Key
-  #     api_key = app_store_connect_api_key(
-  #       key_id:       "#{ENV['APPSTORE_API_KEY_ID']}", # ID de la API Key (desde variables de entorno)
-  #       issuer_id:    "#{ENV['APPSTORE_ISSUER_ID']}", # Issuer ID de tu cuenta (desde variables de entorno)
-  #       key_filepath: key_path # Ruta al archivo .p8 descargado de App Store Connect
-  #     # ALTERNATIVA: Si tienes el contenido del .p8 en una variable (útil para CI/CD):
-  #     # key_content: ENV['APPSTORE_API_PRIVATE_KEY']
-  #     )
-  #   # -----------------------------------------------------------------------------
-  #   # PASO 4: SUBIR A TESTFLIGHT
-  #   # -----------------------------------------------------------------------------
-  #   # upload_to_testflight maneja todo el proceso de upload del IPA
-  #     upload_to_testflight(
-  #       api_key:  api_key,
-  #       skip_waiting_for_build_processing: true
-  #     )
-  #     UI.success("🎉 [deploy_testflight_staging] IPA subida a TestFlight correctamente")
-  #   end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  # ===========================================================================
 
  private_lane :build_ipa do |options|
    # Obtiene la configuración del ambiente
@@ -198,38 +91,35 @@ platform :ios do
     config = ENVIRONMENTS[env]
     UI.message("🔧 Compilando IPA para #{env}...")
 
-
     # Configura la firma manual
-    update_code_signing_settings(
-      use_automatic_signing: false,
-      path: COMMON[:project],
-      targets: ["Runner"],
-      build_configurations: [config[:configuration]],
-      profile_name: config[:profile_name],
-      code_sign_identity: COMMON[:code_sign_identity]
+    update_code_signing_settings( 
+      use_automatic_signing: false, # Desactiva la firma automática de Xcode
+      path: COMMON[:project],  # Ruta al archivo .xcodeproj
+      targets: ["Runner"], # Array de targets a configurar (normalmente solo uno)
+      build_configurations: [config[:configuration]], # Configuración de build específica (debe existir en Xcode) - -En tu scheme de Xcode, verifica en Archive > que dice
+      profile_name: config[:profile_name],   # tu provisioning profile de distribución
+      code_sign_identity: COMMON[:code_sign_identity] # el certificado exacto en tu keychain
     )
     
     # Compila la IPA
     build_app(
       workspace: COMMON[:workspace],
-      scheme: config[:scheme],
-      configuration: config[:configuration],
-      export_method: "app-store",
-      output_directory: COMMON[:output_directory],
-      output_name: config[:output_name],
-      clean: true,
-      skip_profile_detection: true,
+      scheme: config[:scheme],  # Scheme de tu app
+      configuration: config[:configuration],  # Configuración personalizada
+      export_method: "app-store", # Método de exportación
+      output_directory: COMMON[:output_directory], # Directorio donde se guardará la IPA
+      output_name: config[:output_name], # Nombre de la IPA generada
+      clean: true, # Limpia antes de compilar
+      skip_profile_detection: true,  # Evita que Gym intente detectar perfiles automáticamente
       export_options: {
         provisioningProfiles: {
-          config[:bundle_id] => config[:profile_name]
+          config[:bundle_id] => config[:profile_name] # Nombre del perfil de aprovisionamiento
         },
-        signingStyle: "manual",
-        teamID: COMMON[:team_id]
+        signingStyle: "manual", # Estilo de firma manual
+        teamID: COMMON[:team_id]   # Este teamID debe coincidir con el del perfil de aprovisionamiento
       }
     )
  end
-
-
 
 
   # ===========================================================================
@@ -252,6 +142,7 @@ platform :ios do
     build_ipa(environment: environment)
     
     # Paso 2: Configurar API Key
+      # __FILE__ es la ruta de este archivo, File.dirname obtiene su directorio      
     # Obtiene la ruta de la carpeta donde está este Fastfile (es decir, .../ios/fastlane)
     fastlane_dir = File.dirname(__FILE__) 
 
@@ -264,11 +155,11 @@ platform :ios do
 
     # 1) Creamos objeto API Key
     api_key = app_store_connect_api_key(
-      key_id:       "#{ENV['APPSTORE_API_KEY_ID']}",
-      issuer_id:    "#{ENV['APPSTORE_ISSUER_ID']}",
-      # key_id: "6X599Y8L2Z",
-      # issuer_id: "b5321cf4-dfaa-4715-8b11-af98398bb91c",
+      key_id:       "#{ENV['APPSTORE_API_KEY_ID']}", # ID de la API Key (desde variables de entorno)
+      issuer_id:    "#{ENV['APPSTORE_ISSUER_ID']}", # Issuer ID de tu cuenta (desde variables de entorno)
       key_filepath: key_path
+        #     # ALTERNATIVA: Si tienes el contenido del .p8 en una variable (útil para CI/CD):
+     # key_content: ENV['APPSTORE_API_PRIVATE_KEY']
     )
 
     upload_to_testflight(
@@ -281,101 +172,6 @@ platform :ios do
     
     UI.success("🎉 Deploy de #{environment} completado exitosamente")
   end 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # 
-  # 
-  # 
-  # 
-  # 
-  # 
-  # 
-  # 
-  # 
-  # 
-  # 
-
-
-  # desc "Build production TestFlight IPA con firma manual"
-  # private_lane :build_production do
-  #   UI.message("🔧 [build_production] Compilando IPA con firma manual…")
-
-  #   # 1) Fija la firma manual para tu configuración custom "Release-production"
-  #   update_code_signing_settings(
-  #     use_automatic_signing: false,
-  #     path: "Runner.xcodeproj",
-  #     targets: ["Runner"],
-  #     build_configurations: ["Release-production"],
-  #     profile_name: "JessmarDistProfileDemo",                           # tu provisioning profile de distribución
-  #     code_sign_identity: "iPhone Distribution: Jessmar Perez (GDQCANTTZ3)"  # el certificado exacto en tu keychain
-  #   )
-
-  #   # 2) Compila la IPA usando ese perfil y evita que Gym intente detectarlos por su cuenta
-  #   build_app(
-  #     workspace:              "Runner.xcworkspace",
-  #     scheme:                 "production",
-  #     configuration:          "Release-production",
-  #     export_method:          "app-store",
-  #     output_directory:       "./build",
-  #     output_name:            "app-production.ipa",
-  #     skip_profile_detection: true,
-  #     export_options: {
-  #       provisioningProfiles: {
-  #         "com.jelafintegradores.democicd" => "JessmarDistProfileDemo"
-  #       },
-  #       signingStyle: "manual",
-  #       teamID:       "GDQCANTTZ3"
-  #     }
-  #   )
-
-  # end
-
-  #   desc "Deploy Staging a TestFlight"
-  #   lane :deploy_staging do
-  #     UI.message("🚀 [deploy_staging] Iniciando build y upload a TestFlight…")
-  #     build_production
-
-  #     UI.message("🔑 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
-  #     UI.message("🔑 Issuer ID: #{ENV['APPSTORE_ISSUER_ID']}")
-  #     UI.message("🔑 APPSTORE_API_PRIVATE_KEY: #{ENV['APPSTORE_API_PRIVATE_KEY']}")
-  #     sh("pwd")
-  #     sh("ls -la")
-  #     # Obtiene la ruta de la carpeta donde está este Fastfile (es decir, .../ios/fastlane)
-  #     fastlane_dir = File.dirname(__FILE__) 
-
-  #     # Crea la ruta completa y correcta al archivo
-  #     key_path = File.expand_path("AuthKey_id_api_key.p8", fastlane_dir) 
-
-
-  #       # 1) Creamos objeto API Key
-  #     api_key = app_store_connect_api_key(
-  #       key_id:       "#{ENV['APPSTORE_API_KEY_ID']}",
-  #       issuer_id:    "#{ENV['APPSTORE_ISSUER_ID']}",
-  #       # key_id: "6X599Y8L2Z",
-  #       # issuer_id: "b5321cf4-dfaa-4715-8b11-af98398bb91c",
-  #       key_filepath: key_path
-  #     )
-
-
-  #     upload_to_testflight(
-  #       api_key:  api_key,
-  #       skip_waiting_for_build_processing: true
-  #     )
-
-  #     UI.success("🎉 [deploy_staging] IPA subida a TestFlight correctamente")
-  #   end
 
 
   # ===========================================================================
@@ -393,6 +189,8 @@ platform :ios do
   end
 
 end
+
+
 
 
 
