@@ -225,7 +225,7 @@ jobs:
   # Build Android Staging
   # ===========================================================================
   build-android-staging:
-    name: Deploy to Staging
+    name: 🚀 Deploy to Staging
     needs: prepare
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
@@ -311,11 +311,11 @@ jobs:
   # Build IOS Staging
   # ===========================================================================
   build-ios-staging:
-    name: Build iOS Staging
+    name: 🚀 Deploy iOS Staging
     # needs: [prepare, test]
     needs: prepare
     runs-on: macos-latest
-    if: false
+    if: true
     environment:
       name: staging
       url: https://appstoreconnect.apple.com

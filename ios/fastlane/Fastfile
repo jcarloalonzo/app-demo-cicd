@@ -1,7 +1,50 @@
+# =============================================================================
+# FASTLANE TEMPLATE: BUILD Y DEPLOY A TESTFLIGHT CON FIRMA MANUAL
+# =============================================================================
+# Este archivo sirve como template para configurar builds y deploys a TestFlight
+# usando firma manual de código. Útil cuando no quieres usar match o gestión
+# automática de certificados.
+#
+# REQUISITOS PREVIOS:
+# - Certificado de distribución instalado en el Keychain
+# - Provisioning Profile de distribución descargado
+# - API Key de App Store Connect configurada
+# - Variables de entorno configuradas (ver sección de configuración)
+# =============================================================================
+
+
 default_platform(:ios)
 
 platform :ios do
 
+  # after_all se ejecuta después de cualquier lane exitosa
+  after_all do |lane|
+    # Limpia archivos temporales
+    clean_build_artifacts
+    
+    # Notificación de éxito (personalizar según necesidades)
+    notification(subtitle: "Fastlane", message: "✅ #{lane} completada exitosamente")
+  end
+
+  # error se ejecuta si alguna lane falla
+  error do |lane, exception|
+    # Limpia archivos incluso si hay error
+    clean_build_artifacts
+    
+    # Notificación de error
+    notification(subtitle: "Fastlane Error", message: "❌ #{lane} falló: #{exception.message}")
+    
+    # Si estás usando Slack, Discord, etc., puedes notificar aquí
+    # slack(
+    #   message: "Deploy fallido: #{exception.message}",
+    #   success: false
+    # )
+
+
+
+
+    
+  end
 
   desc "Build production TestFlight IPA con firma manual"
   private_lane :build_staging do
