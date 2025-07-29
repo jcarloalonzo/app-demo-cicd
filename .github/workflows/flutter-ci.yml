@@ -459,7 +459,7 @@ jobs:
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
           echo "🚀 Ejecutando Fastlane para ios Staging..."
-          bundle exec fastlane deploy_testflight_staging
+          bundle exec fastlane deploy_staging
 
 
 
