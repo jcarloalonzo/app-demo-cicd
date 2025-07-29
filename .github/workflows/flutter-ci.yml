@@ -220,6 +220,7 @@ jobs:
   # SOLO se ejecuta cuando se hace push a la rama 'test'
   deploy-staging:
     name: Deploy to Staging
+    needs: prepare
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
     environment: staging
