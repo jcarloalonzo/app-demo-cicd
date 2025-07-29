@@ -1,4 +1,3 @@
-
 import 'package:app_test_cicd/model/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 
