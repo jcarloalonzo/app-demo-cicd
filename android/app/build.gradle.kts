@@ -129,8 +129,8 @@ android {
             dimension = "environment"
             applicationIdSuffix = ""
             versionNameSuffix = ""
-            versionCode = 3
-            versionName = "0.0.3"
+            versionCode = 4
+            versionName = "0.0.4"
             // Mover esto AQUÍ también
             if (keystoreProdPropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("releaseProduction")
