@@ -49,8 +49,8 @@ platform :ios do
     production: {
       bundle_id: "com.jelafintegradores.democicd",
       scheme: "production", 
-      configuration: "Release",
-      profile_name: "JessmarDistProfileProduction",
+      configuration: "Release-production",
+      profile_name: "JessmarDistProfileDemo",
       output_name: "app-production.ipa",
       # Opciones específicas de TestFlight para production
       # testflight_groups: ["Beta Testers", "External Testers"],

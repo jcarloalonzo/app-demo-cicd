@@ -315,7 +315,7 @@ jobs:
     # needs: [prepare, test]
     needs: prepare
     runs-on: macos-latest
-    if: true
+    if: false
     environment:
       name: staging
       url: https://appstoreconnect.apple.com
@@ -545,30 +545,42 @@ jobs:
 
 
 
-  build-ios-prod:
-    name: Build iOS Production
+
+
+  # ===========================================================================
+  # Build IOS production
+  # ===========================================================================
+  build-ios-production:
+    name: 🚀 Deploy iOS Production
     # needs: [prepare, test]
     needs: prepare
     runs-on: macos-latest
-    if: false
+    if: true
     environment:
       name: production
       url: https://appstoreconnect.apple.com
 
     steps:
+      # Clona el repositorio
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      # Configura Xcode (necesario para builds de iOS)
+      # Asegúrate de que la versión de Xcode sea compatible con tu proyecto Flutter
+      # Puedes usar 'latest' o una versión específica  
       - name: Select Xcode 16
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: "16.2.0" # Puedes usar 'latest' o una versión específica
 
+      # Configura Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: ${{ env.FLUTTER_CHANNEL }}
 
+      #Instala Ruby y configura el entorno para Fastlane
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -576,52 +588,77 @@ jobs:
           bundler-cache: true
           working-directory: ios
 
+      # Instala la gema Fastlane para poder ejecutar las lanes definidas en Fastfile
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      # Descarga las dependencias preparadas anteriormente
       - name: Download dependencies
         uses: actions/download-artifact@v4
         with:
           name: flutter-dependencies
+
+      # Instala las dependencias de Flutter
       - name: Install Flutter dependencies
         run: |
           echo "📦 Installing Flutter dependencies..."
           flutter pub get
 
+      # Instala las dependencias de CocoaPods (necesario para iOS)
+      # Asegúrate de que el archivo Podfile esté configurado correctamente
+      # y que tengas un Podfile.lock actualizado
+      # Esto es crítico para evitar problemas de dependencias en iOS
       - name: Install CocoaPods dependencies
         run: |
           echo "🍫 Installing CocoaPods..."
           cd ios
           pod install
           cd ..
+
       # CRÍTICO: Agregar este paso
+      # Este paso es esencial para compilar la app iOS
       - name: Build Flutter iOS
         run: |
           echo "🔨 Building Flutter iOS..."
           flutter build ios --release --no-codesign \
             --flavor production \
-            --target lib/main_production.dart \
+            --target lib/main_production.dart 
 
+
+      # Instala el certificado de Apple desde los secrets
+      # Asegúrate de que el certificado esté en formato .p12 y que tengas
+      # el password correcto configurado en los secrets de GitHub
+      # Este paso es crítico para poder firmar la app iOS
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v5
         with:
           p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
 
+      # Verifica las identidades de firma de código instaladas
+      # Esto es útil para depurar problemas de firma
       - name: Verify code‑sign identities
         run: |
           echo "🔍 Identidades instaladas:"
           security find-identity -p codesigning -v
 
+      # Instala el perfil de aprovisionamiento de Apple desde los secrets
+      # Asegúrate de que el perfil esté en formato .mobileprovision y que
+      # tengas el perfil correcto configurado en los secrets de GitHub
       - name: Install Apple Provisioning Profile
         run: |
           # 1. Crea el directorio donde Xcode busca los perfiles
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
 
           # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
-          echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+          echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/JessmarDistProfileDemo.mobileprovision"
 
+      # Verifica el perfil de aprovisionamiento instalado
+      # Este paso es crítico para asegurarse de que el perfil es válido
       - name: Verify Provisioning Profile
         run: |
           echo "🔎 Verificando el perfil de aprovisionamiento..."
-          PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+          PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/JessmarDistProfileDemo.mobileprovision"
 
           # Comprueba si el archivo existe y no está vacío
           if [ ! -s "$PROFILE_PATH" ]; then
@@ -636,18 +673,24 @@ jobs:
           echo "✅ El perfil de aprovisionamiento parece ser válido."      
           #
 
+      # Lista los perfiles de aprovisionamiento instalados
+      # Esto es útil para depurar problemas de firma y verificar que el perfil correcto está instalado
       - name: List provisioning profiles
         run: |
           echo "📱 Perfiles instalados:"
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
+      # Crea el archivo .p8 necesario para la autenticación con App Store Connect
+      # Asegúrate de que el secret APPSTORE_API_PRIVATE_KEY esté configurado correctamente
+      # Este paso es crítico para poder subir la app a TestFlight o App Store
       - name: Crear archivo .p8
         working-directory: ios/fastlane
         run: |
-          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_123.p8
+          echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_id_api_key.p8
           pwd
           ls -la
 
+      # Ejecuta Fastlane para construir y desplegar la app iOS
       - name: Build and deploy with Fastlane
         working-directory: ios
         env:
@@ -655,4 +698,123 @@ jobs:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
-          bundle exec fastlane deploy_staging
+          echo "🚀 Ejecutando Fastlane para ios Staging..."
+          bundle exec fastlane deploy_production
+
+
+
+
+
+
+
+  # build-ios-prod:
+  #   name: Build iOS Production
+  #   # needs: [prepare, test]
+  #   needs: prepare
+  #   runs-on: macos-latest
+  #   if: false
+  #   environment:
+  #     name: production
+  #     url: https://appstoreconnect.apple.com
+
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+  #     - name: Select Xcode 16
+  #       uses: maxim-lobanov/setup-xcode@v1
+  #       with:
+  #         xcode-version: "16.2.0" # Puedes usar 'latest' o una versión específica
+
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+  #         channel: ${{ env.FLUTTER_CHANNEL }}
+
+  #     - name: Setup Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.2"
+  #         bundler-cache: true
+  #         working-directory: ios
+
+  #     - name: Download dependencies
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: flutter-dependencies
+  #     - name: Install Flutter dependencies
+  #       run: |
+  #         echo "📦 Installing Flutter dependencies..."
+  #         flutter pub get
+
+  #     - name: Install CocoaPods dependencies
+  #       run: |
+  #         echo "🍫 Installing CocoaPods..."
+  #         cd ios
+  #         pod install
+  #         cd ..
+  #     # CRÍTICO: Agregar este paso
+  #     - name: Build Flutter iOS
+  #       run: |
+  #         echo "🔨 Building Flutter iOS..."
+  #         flutter build ios --release --no-codesign \
+  #           --flavor production \
+  #           --target lib/main_production.dart 
+
+  #     - name: Install Apple Certificate
+  #       uses: apple-actions/import-codesign-certs@v5
+  #       with:
+  #         p12-file-base64: ${{ secrets.IOS_P12_CERT_BASE64 }}
+  #         p12-password: ${{ secrets.IOS_P12_CERT_PASSWORD }}
+
+  #     - name: Verify code‑sign identities
+  #       run: |
+  #         echo "🔍 Identidades instaladas:"
+  #         security find-identity -p codesigning -v
+
+  #     - name: Install Apple Provisioning Profile
+  #       run: |
+  #         # 1. Crea el directorio donde Xcode busca los perfiles
+  #         mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+  #         # 2. Decodifica el perfil (guardado como un secret en base64) y lo guarda en el directorio
+  #         echo "${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+
+  #     - name: Verify Provisioning Profile
+  #       run: |
+  #         echo "🔎 Verificando el perfil de aprovisionamiento..."
+  #         PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/dist_profile.mobileprovision"
+
+  #         # Comprueba si el archivo existe y no está vacío
+  #         if [ ! -s "$PROFILE_PATH" ]; then
+  #           echo "❌ Error: El archivo del perfil de aprovisionamiento no existe o está vacío."
+  #           exit 1
+  #         fi
+
+  #         # Intenta decodificar el perfil para confirmar que es un archivo válido
+  #         echo "📖 Leyendo el contenido del perfil..."
+  #         security cms -D -i "$PROFILE_PATH"
+
+  #         echo "✅ El perfil de aprovisionamiento parece ser válido."      
+  #         #
+
+  #     - name: List provisioning profiles
+  #       run: |
+  #         echo "📱 Perfiles instalados:"
+  #         ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+
+  #     - name: Crear archivo .p8
+  #       working-directory: ios/fastlane
+  #       run: |
+  #         echo "${{ secrets.APPSTORE_API_PRIVATE_KEY }}" > AuthKey_123.p8
+  #         pwd
+  #         ls -la
+
+  #     - name: Build and deploy with Fastlane
+  #       working-directory: ios
+  #       env:
+  #         APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+  #         APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+  #         APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+  #       run: |
+  #         bundle exec fastlane deploy_staging
