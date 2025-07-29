@@ -223,7 +223,7 @@ jobs:
     needs: prepare
     # needs: test # Espera a que 'prepare' termine
     runs-on: ubuntu-latest
-    environment: staging
+    environment: production
 
     # Condición: SOLO en push a la rama test
     # if: github.event_name == 'push' && github.ref == 'refs/heads/test'

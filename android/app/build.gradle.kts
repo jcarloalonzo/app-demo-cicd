@@ -48,9 +48,18 @@ android {
 
         if(keystoreTestPropertiesFile.exists()){
             create("releaseStaging") {
-                keyAlias = keystoreTestProperties["keyAlias"] as String
+                val storeFilePath = keystoreTestProperties["storeFile"] as String
+                val keyAliasValue = keystoreTestProperties["keyAlias"] as String
+                
+                println("=== STAGING SIGNING CONFIG ===")
+                println("storeFile path: $storeFilePath")
+                println("storeFile exists: ${file(storeFilePath).exists()}")
+                println("keyAlias: $keyAliasValue")
+                println("==============================")
+                
+                keyAlias = keyAliasValue
                 keyPassword = keystoreTestProperties["keyPassword"] as String
-                storeFile = file(keystoreTestProperties["storeFile"] ?: "")
+                storeFile = file(storeFilePath)
                 storePassword = keystoreTestProperties["storePassword"] as String
             }
         }
@@ -62,6 +71,9 @@ android {
                 storePassword = keystoreProdProperties["storePassword"] as String
             }
         }
+        println("=== DEBUG KEYSTORE  🚀🚀🚀🚀🚀🚀🚀===")
+  
+
 
     }
 
@@ -96,18 +108,22 @@ android {
             versionNameSuffix = "-test"
             versionCode = 2
             versionName = "0.0.2"
-            //signingConfig = signingConfigs.getByName("releaseStaging")
-            buildTypes {
-                getByName("debug") {
-                    signingConfig = signingConfigs.getByName("debug")
-                }
-                getByName("release") {
-                    signingConfig = if (keystoreTestPropertiesFile.exists())
-                        signingConfigs.getByName("releaseStaging")
-                    else
-                        signingConfigs.getByName("debug")
-                }
+                    // Mover esto AQUÍ, fuera de buildTypes
+            if (keystoreTestPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("releaseStaging")
             }
+            //signingConfig = signingConfigs.getByName("releaseStaging")
+            // buildTypes {
+            //     getByName("debug") {
+            //         signingConfig = signingConfigs.getByName("debug")
+            //     }
+            //     getByName("release") {
+            //         signingConfig = if (keystoreTestPropertiesFile.exists())
+            //             signingConfigs.getByName("releaseStaging")
+            //         else
+            //             signingConfigs.getByName("debug")
+            //     }
+            // }
         }
         create("production") {
             dimension = "environment"
@@ -115,18 +131,23 @@ android {
             versionNameSuffix = ""
             versionCode = 3
             versionName = "0.0.3"
-            //signingConfig = signingConfigs.getByName("releaseProduction")
-            buildTypes {
-                getByName("debug") {
-                    signingConfig = signingConfigs.getByName("debug")
-                }
-                getByName("release") {
-                    signingConfig = if (keystoreProdPropertiesFile.exists())
-                        signingConfigs.getByName("releaseProduction")
-                    else
-                        signingConfigs.getByName("debug")
-                }
+            // Mover esto AQUÍ también
+            if (keystoreProdPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("releaseProduction")
             }
+                    
+            //signingConfig = signingConfigs.getByName("releaseProduction")
+            // buildTypes {
+            //     getByName("debug") {
+            //         signingConfig = signingConfigs.getByName("debug")
+            //     }
+            //     getByName("release") {
+            //         signingConfig = if (keystoreProdPropertiesFile.exists())
+            //             signingConfigs.getByName("releaseProduction")
+            //         else
+            //             signingConfigs.getByName("debug")
+            //     }
+            // }
 
         }
     }
