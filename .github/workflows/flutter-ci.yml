@@ -46,7 +46,7 @@ on:
 env:
   # Versión de Flutter a usar en todo el pipeline
   FLUTTER_CHANNEL: stable
-  FLUTTER_VERSION: "3.19.3"
+  FLUTTER_VERSION: "3.29.3"
   # Configuración de Java para builds de Android
   JAVA_VERSION: "17"
   JAVA_DISTRIBUTION: "temurin" # Distribución recomendada para Android/Flutter
