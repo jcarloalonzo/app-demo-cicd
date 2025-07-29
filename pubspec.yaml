@@ -51,6 +51,7 @@ scripts:
   generate_ios_production: flutter build ios --flavor production -t lib/main_production.dart --release
   generate_ios_test: flutter build ios --flavor staging -t lib/main_staging.dart --release 
   generate_ipa_ios_production: flutter build ipa --flavor production -t lib/main_production.dart --release
+  generate_ipa_ios_staging: flutter build ipa --flavor staging -t lib/main_staging.dart --release
   # 
   # 
   generate_ipa_ios_production_cicd: flutter build ipa   --flavor production -t lib/main_production.dart --release  --export-options-plist=ios/ExportOptionsProduction.plist

@@ -3,29 +3,132 @@ default_platform(:ios)
 platform :ios do
 
 
+  desc "Build production TestFlight IPA con firma manual"
+  private_lane :build_staging do
+    UI.message("🔧 [build_staging] Compilando IPA con firma manual…")
 
-
-
-  desc "Deploy Development to Firebase App Distribution"
-  lane :deploy_dev do
-    build_dev
-    firebase_app_distribution(
-      app: ENV["FIREBASE_APP_ID_IOS_DEV"],
-      firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"],
-      groups: "internal-testers",
-      release_notes: "iOS Development build - #{ENV['GITHUB_SHA']}"
+    # 1) Fija la firma manual para tu configuración custom "Release-production"
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      targets: ["Runner"],
+      build_configurations: ["Release-staging"],
+      profile_name: "JessmarDistProfileDemoTest",                           # tu provisioning profile de distribución
+      code_sign_identity: "iPhone Distribution: Jessmar Perez (GDQCANTTZ3)"  # el certificado exacto en tu keychain
     )
+
+    # 2) Compila la IPA usando ese perfil y evita que Gym intente detectarlos por su cuenta
+    build_app(
+      workspace:              "Runner.xcworkspace",
+      scheme:                 "staging",
+      configuration:          "Release-staging",
+      export_method:          "app-store",
+      output_directory:       "./build",
+      output_name:            "app-staging.ipa",
+      skip_profile_detection: true,
+      export_options: {
+        provisioningProfiles: {
+          "com.jelafintegradores.democicd.test" => "JessmarDistProfileDemoTest"
+        },
+        signingStyle: "manual",
+        teamID:       "GDQCANTTZ3"
+      }
+    )
+
   end
 
+    desc "Deploy Staging a TestFlight"
+    lane :deploy_testflight_staging do
+      UI.message("🚀 [deploy_testflight_staging] Iniciando build y upload a TestFlight…")
+      build_staging
+
+      UI.message("🔑 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
+      UI.message("🔑 Issuer ID: #{ENV['APPSTORE_ISSUER_ID']}")
+      UI.message("🔑 APPSTORE_API_PRIVATE_KEY: #{ENV['APPSTORE_API_PRIVATE_KEY']}")
+      sh("pwd")
+      sh("ls -la")
+      # Obtiene la ruta de la carpeta donde está este Fastfile (es decir, .../ios/fastlane)
+      fastlane_dir = File.dirname(__FILE__) 
+
+      # Crea la ruta completa y correcta al archivo
+      key_path = File.expand_path("AuthKey_id_api_key.p8", fastlane_dir) 
+
+      
+        # 1) Creamos objeto API Key
+      api_key = app_store_connect_api_key(
+        key_id:       "#{ENV['APPSTORE_API_KEY_ID']}",
+        issuer_id:    "#{ENV['APPSTORE_ISSUER_ID']}",
+        # key_id: "6X599Y8L2Z",
+        # issuer_id: "b5321cf4-dfaa-4715-8b11-af98398bb91c",
+        key_filepath: key_path
+      )
+
+
+      upload_to_testflight(
+        api_key:  api_key,
+        skip_waiting_for_build_processing: true
+      )
+
+      UI.success("🎉 [deploy_testflight_staging] IPA subida a TestFlight correctamente")
+    end
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
 
 
   desc "Build production TestFlight IPA con firma manual"
-  lane :build_staging do
-    UI.message("🔧 [build_staging] Compilando IPA con firma manual…")
+  private_lane :build_production do
+    UI.message("🔧 [build_production] Compilando IPA con firma manual…")
 
     # 1) Fija la firma manual para tu configuración custom "Release-production"
     update_code_signing_settings(
@@ -60,7 +163,7 @@ platform :ios do
     desc "Deploy Staging a TestFlight"
     lane :deploy_staging do
       UI.message("🚀 [deploy_staging] Iniciando build y upload a TestFlight…")
-      build_staging
+      build_production
 
       UI.message("🔑 API Key ID: #{ENV['APPSTORE_API_KEY_ID']}")
       UI.message("🔑 Issuer ID: #{ENV['APPSTORE_ISSUER_ID']}")
@@ -71,7 +174,9 @@ platform :ios do
       fastlane_dir = File.dirname(__FILE__) 
 
       # Crea la ruta completa y correcta al archivo
-      key_path = File.expand_path("AuthKey_123.p8", fastlane_dir) 
+      key_path = File.expand_path("AuthKey_id_api_key.p8", fastlane_dir) 
+
+
         # 1) Creamos objeto API Key
       api_key = app_store_connect_api_key(
         key_id:       "#{ENV['APPSTORE_API_KEY_ID']}",
@@ -90,6 +195,15 @@ platform :ios do
       UI.success("🎉 [deploy_staging] IPA subida a TestFlight correctamente")
     end
 
+
+
+
+
+
+
+
+
+
   # 
   # 
   # 
@@ -99,7 +213,7 @@ platform :ios do
   # 
   # 
   # 
-  # 
+  # de prueba borrar luego
   desc "Build Production IPA"
   lane :build_production do
     build_app(
